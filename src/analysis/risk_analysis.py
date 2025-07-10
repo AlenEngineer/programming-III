@@ -1,6 +1,6 @@
 """
-Risk analysis module for the Academic Data Analysis System.
-Identifies students at risk based on various academic and behavioral indicators.
+Módulo de análisis de riesgo para el Sistema de Análisis de Datos Académicos.
+Identifica estudiantes en riesgo basado en varios indicadores académicos y comportamentales.
 """
 
 import pandas as pd
@@ -10,450 +10,475 @@ from typing import Dict, List, Any, Optional, Tuple
 import sys
 import os
 
-# Add the parent directory to the path to import config
+# Agregar el directorio padre al path para importar config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from config import MINIMUM_PASSING_GRADE, RISK_ABSENCE_THRESHOLD, LOW_PARTICIPATION_THRESHOLD
 from src.utils.helpers import log_analysis_step, format_percentage
 
 logger = logging.getLogger(__name__)
 
-def identify_at_risk_students(df: pd.DataFrame, min_engagement: Optional[float] = None) -> pd.DataFrame:
+def identificar_estudiantes_en_riesgo(df: pd.DataFrame, min_engagement: Optional[float] = None) -> pd.DataFrame:
     """
-    Identify students at risk based on multiple criteria.
+    Identifica estudiantes en riesgo basado en múltiples criterios.
     
     Args:
-        df: DataFrame containing student data
-        min_engagement: Minimum engagement threshold (uses config default if None)
+        df: DataFrame conteniendo datos de estudiantes
+        min_engagement: Umbral mínimo de participación (usa el valor por defecto del config si es None)
         
     Returns:
-        DataFrame containing at-risk students with risk factors
+        DataFrame conteniendo estudiantes en riesgo con factores de riesgo
     """
     try:
-        log_analysis_step("Identifying at-risk students")
+        log_analysis_step("Identificando estudiantes en riesgo")
         
         if min_engagement is None:
             min_engagement = LOW_PARTICIPATION_THRESHOLD
         
-        # Initialize risk factors tracking
-        at_risk_students = df.copy()
-        at_risk_students['RiskFactors'] = ''
-        at_risk_students['RiskScore'] = 0
-        at_risk_students['IsAtRisk'] = False
+        # Inicializar seguimiento de factores de riesgo
+        estudiantes_en_riesgo = df.copy()
+        estudiantes_en_riesgo['FactoresRiesgo'] = ''
+        estudiantes_en_riesgo['PuntajeRiesgo'] = 0
+        estudiantes_en_riesgo['EstaEnRiesgo'] = False
         
-        # Risk Factor 1: Low performance (Class = 'L')
+        # Factor de Riesgo 1: Bajo rendimiento (Class = 'L')
         if 'Class' in df.columns:
-            low_performance = at_risk_students['Class'] == 'L'
-            at_risk_students.loc[low_performance, 'RiskFactors'] += 'Low Performance; '
-            at_risk_students.loc[low_performance, 'RiskScore'] += 3
-            logger.info(f"Found {low_performance.sum()} students with low performance")
+            bajo_rendimiento = estudiantes_en_riesgo['Class'] == 'L'
+            estudiantes_en_riesgo.loc[bajo_rendimiento, 'FactoresRiesgo'] += 'Bajo Rendimiento; '
+            estudiantes_en_riesgo.loc[bajo_rendimiento, 'PuntajeRiesgo'] += 3
+            logger.info(f"Encontrados {bajo_rendimiento.sum()} estudiantes con bajo rendimiento")
         
-        # Risk Factor 2: High absence days
+        # Factor de Riesgo 2: Días de ausencia altos
         if 'StudentAbsenceDays' in df.columns:
-            high_absence = at_risk_students['StudentAbsenceDays'] == 'Above-7'
-            at_risk_students.loc[high_absence, 'RiskFactors'] += 'High Absences; '
-            at_risk_students.loc[high_absence, 'RiskScore'] += 2
-            logger.info(f"Found {high_absence.sum()} students with high absences")
+            ausencias_altas = estudiantes_en_riesgo['StudentAbsenceDays'] == 'Above-7'
+            estudiantes_en_riesgo.loc[ausencias_altas, 'FactoresRiesgo'] += 'Ausencias Altas; '
+            estudiantes_en_riesgo.loc[ausencias_altas, 'PuntajeRiesgo'] += 2
+            logger.info(f"Encontrados {ausencias_altas.sum()} estudiantes con ausencias altas")
         
-        # Risk Factor 3: Low total engagement
+        # Factor de Riesgo 3: Baja participación total
         if 'TotalEngagement' in df.columns:
-            low_engagement = at_risk_students['TotalEngagement'] < min_engagement
-            at_risk_students.loc[low_engagement, 'RiskFactors'] += 'Low Engagement; '
-            at_risk_students.loc[low_engagement, 'RiskScore'] += 2
-            logger.info(f"Found {low_engagement.sum()} students with low engagement (< {min_engagement})")
+            baja_participacion = estudiantes_en_riesgo['TotalEngagement'] < min_engagement
+            estudiantes_en_riesgo.loc[baja_participacion, 'FactoresRiesgo'] += 'Baja Participación; '
+            estudiantes_en_riesgo.loc[baja_participacion, 'PuntajeRiesgo'] += 2
+            logger.info(f"Encontrados {baja_participacion.sum()} estudiantes con baja participación (< {min_engagement})")
         
-        # Risk Factor 4: Low individual participation metrics
-        participation_cols = ['RaisedHands', 'Discussion']
-        for col in participation_cols:
+        # Factor de Riesgo 4: Métricas de participación individual bajas
+        columnas_participacion = ['RaisedHands', 'Discussion']
+        for col in columnas_participacion:
             if col in df.columns:
-                low_participation = at_risk_students[col] < (min_engagement / 4)  # Quarter of total threshold
-                at_risk_students.loc[low_participation, 'RiskFactors'] += f'Low {col}; '
-                at_risk_students.loc[low_participation, 'RiskScore'] += 1
-                logger.info(f"Found {low_participation.sum()} students with low {col}")
+                participacion_baja = estudiantes_en_riesgo[col] < (min_engagement / 4)  # Cuarto del umbral total
+                estudiantes_en_riesgo.loc[participacion_baja, 'FactoresRiesgo'] += f'Bajo {col}; '
+                estudiantes_en_riesgo.loc[participacion_baja, 'PuntajeRiesgo'] += 1
+                logger.info(f"Encontrados {participacion_baja.sum()} estudiantes con bajo {col}")
         
-        # Risk Factor 5: Poor parent satisfaction
+        # Factor de Riesgo 5: Pobre satisfacción de los padres
         if 'ParentschoolSatisfaction' in df.columns:
-            poor_satisfaction = at_risk_students['ParentschoolSatisfaction'] == 'Bad'
-            at_risk_students.loc[poor_satisfaction, 'RiskFactors'] += 'Poor Parent Satisfaction; '
-            at_risk_students.loc[poor_satisfaction, 'RiskScore'] += 1
-            logger.info(f"Found {poor_satisfaction.sum()} students with poor parent satisfaction")
+            satisfaccion_pobre = estudiantes_en_riesgo['ParentschoolSatisfaction'] == 'Bad'
+            estudiantes_en_riesgo.loc[satisfaccion_pobre, 'FactoresRiesgo'] += 'Pobre Satisfacción Padres; '
+            estudiantes_en_riesgo.loc[satisfaccion_pobre, 'PuntajeRiesgo'] += 1
+            logger.info(f"Encontrados {satisfaccion_pobre.sum()} estudiantes con pobre satisfacción de padres")
         
-        # Risk Factor 6: No parent survey response
+        # Factor de Riesgo 6: Sin respuesta de encuesta de padres
         if 'ParentAnsweringSurvey' in df.columns:
-            no_survey = at_risk_students['ParentAnsweringSurvey'] == 'No'
-            at_risk_students.loc[no_survey, 'RiskFactors'] += 'No Parent Survey; '
-            at_risk_students.loc[no_survey, 'RiskScore'] += 1
-            logger.info(f"Found {no_survey.sum()} students with no parent survey response")
+            sin_encuesta = estudiantes_en_riesgo['ParentAnsweringSurvey'] == 'No'
+            estudiantes_en_riesgo.loc[sin_encuesta, 'FactoresRiesgo'] += 'Sin Encuesta Padres; '
+            estudiantes_en_riesgo.loc[sin_encuesta, 'PuntajeRiesgo'] += 1
+            logger.info(f"Encontrados {sin_encuesta.sum()} estudiantes sin respuesta de encuesta de padres")
         
-        # Determine overall risk status (risk score >= 3 considered at risk)
-        at_risk_students['IsAtRisk'] = at_risk_students['RiskScore'] >= 3
+        # Determinar estado general de riesgo (puntaje de riesgo >= 3 considerado en riesgo)
+        estudiantes_en_riesgo['EstaEnRiesgo'] = estudiantes_en_riesgo['PuntajeRiesgo'] >= 3
         
-        # Clean up risk factors string
-        at_risk_students['RiskFactors'] = at_risk_students['RiskFactors'].str.rstrip('; ')
+        # Limpiar cadena de factores de riesgo
+        estudiantes_en_riesgo['FactoresRiesgo'] = estudiantes_en_riesgo['FactoresRiesgo'].str.rstrip('; ')
         
-        # Filter to only at-risk students
-        at_risk_only = at_risk_students[at_risk_students['IsAtRisk']].copy()
+        # Filtrar solo estudiantes en riesgo
+        solo_en_riesgo = estudiantes_en_riesgo[estudiantes_en_riesgo['EstaEnRiesgo']].copy()
         
-        logger.info(f"Identified {len(at_risk_only)} students at risk out of {len(df)} total students")
-        return at_risk_only.sort_values('RiskScore', ascending=False)
+        logger.info(f"Identificados {len(solo_en_riesgo)} estudiantes en riesgo de {len(df)} estudiantes totales")
+        return solo_en_riesgo.sort_values('PuntajeRiesgo', ascending=False)
         
     except Exception as e:
-        logger.error(f"Error identifying at-risk students: {e}")
+        logger.error(f"Error identificando estudiantes en riesgo: {e}")
         return pd.DataFrame()
 
-def analyze_attendance_patterns(df: pd.DataFrame) -> pd.DataFrame:
+# Alias de compatibilidad para el nombre en inglés
+def identify_at_risk_students(df: pd.DataFrame, min_engagement: Optional[float] = None) -> pd.DataFrame:
+    """Alias de compatibilidad para identificar_estudiantes_en_riesgo"""
+    return identificar_estudiantes_en_riesgo(df, min_engagement)
+
+def analizar_patrones_asistencia(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Analyze attendance patterns and identify concerning trends.
+    Analiza patrones de asistencia e identifica tendencias preocupantes.
     
     Args:
-        df: DataFrame containing student data
+        df: DataFrame conteniendo datos de estudiantes
         
     Returns:
-        DataFrame with attendance analysis results
+        DataFrame con resultados del análisis de asistencia
     """
     try:
-        log_analysis_step("Analyzing attendance patterns")
+        log_analysis_step("Analizando patrones de asistencia")
         
         if 'StudentAbsenceDays' not in df.columns:
-            logger.warning("StudentAbsenceDays column not found for attendance analysis")
+            logger.warning("Columna StudentAbsenceDays no encontrada para análisis de asistencia")
             return pd.DataFrame()
         
-        # Create attendance analysis
-        attendance_analysis = []
+        # Crear análisis de asistencia
+        analisis_asistencia = []
         
-        # Overall attendance distribution
-        attendance_dist = df['StudentAbsenceDays'].value_counts()
-        total_students = len(df)
+        # Distribución general de asistencia
+        distribucion_asistencia = df['StudentAbsenceDays'].value_counts()
+        total_estudiantes = len(df)
         
-        for absence_category, count in attendance_dist.items():
-            percentage = (count / total_students) * 100
-            attendance_analysis.append({
-                'Category': f'Students with {absence_category} absence days',
-                'Count': count,
-                'Percentage': f'{percentage:.1f}%',
-                'Analysis_Type': 'Overall Distribution'
+        for categoria_ausencia, count in distribucion_asistencia.items():
+            porcentaje = (count / total_estudiantes) * 100
+            analisis_asistencia.append({
+                'Categoria': f'Estudiantes con {categoria_ausencia} días de ausencia',
+                'Cantidad': count,
+                'Porcentaje': f'{porcentaje:.1f}%',
+                'Tipo_Analisis': 'Distribución General'
             })
         
-        # Attendance by subject
+        # Asistencia por materia
         if 'Topic' in df.columns:
-            for subject in df['Topic'].unique():
-                if pd.isna(subject):
+            for materia in df['Topic'].unique():
+                if pd.isna(materia):
                     continue
                     
-                subject_data = df[df['Topic'] == subject]
-                high_absence_count = (subject_data['StudentAbsenceDays'] == 'Above-7').sum()
-                subject_total = len(subject_data)
+                datos_materia = df[df['Topic'] == materia]
+                cantidad_ausencias_altas = (datos_materia['StudentAbsenceDays'] == 'Above-7').sum()
+                total_materia = len(datos_materia)
                 
-                if subject_total > 0:
-                    high_absence_rate = (high_absence_count / subject_total) * 100
-                    attendance_analysis.append({
-                        'Category': f'{subject} - High Absence Rate',
-                        'Count': high_absence_count,
-                        'Percentage': f'{high_absence_rate:.1f}%',
-                        'Analysis_Type': 'By Subject'
+                if total_materia > 0:
+                    tasa_ausencias_altas = (cantidad_ausencias_altas / total_materia) * 100
+                    analisis_asistencia.append({
+                        'Categoria': f'{materia} - Tasa de Ausencias Altas',
+                        'Cantidad': cantidad_ausencias_altas,
+                        'Porcentaje': f'{tasa_ausencias_altas:.1f}%',
+                        'Tipo_Analisis': 'Por Materia'
                     })
         
-        # Attendance by performance
+        # Asistencia por rendimiento
         if 'Class' in df.columns:
-            for performance in df['Class'].unique():
-                if pd.isna(performance):
+            for rendimiento in df['Class'].unique():
+                if pd.isna(rendimiento):
                     continue
                     
-                perf_data = df[df['Class'] == performance]
-                high_absence_count = (perf_data['StudentAbsenceDays'] == 'Above-7').sum()
-                perf_total = len(perf_data)
+                datos_rendimiento = df[df['Class'] == rendimiento]
+                cantidad_ausencias_altas = (datos_rendimiento['StudentAbsenceDays'] == 'Above-7').sum()
+                total_rendimiento = len(datos_rendimiento)
                 
-                if perf_total > 0:
-                    high_absence_rate = (high_absence_count / perf_total) * 100
-                    attendance_analysis.append({
-                        'Category': f'Performance {performance} - High Absence Rate',
-                        'Count': high_absence_count,
-                        'Percentage': f'{high_absence_rate:.1f}%',
-                        'Analysis_Type': 'By Performance'
+                if total_rendimiento > 0:
+                    tasa_ausencias_altas = (cantidad_ausencias_altas / total_rendimiento) * 100
+                    analisis_asistencia.append({
+                        'Categoria': f'Rendimiento {rendimiento} - Tasa de Ausencias Altas',
+                        'Cantidad': cantidad_ausencias_altas,
+                        'Porcentaje': f'{tasa_ausencias_altas:.1f}%',
+                        'Tipo_Analisis': 'Por Rendimiento'
                     })
         
-        # Attendance by gender
+        # Asistencia por género
         if 'gender' in df.columns:
-            for gender in df['gender'].unique():
-                if pd.isna(gender):
+            for genero in df['gender'].unique():
+                if pd.isna(genero):
                     continue
                     
-                gender_data = df[df['gender'] == gender]
-                high_absence_count = (gender_data['StudentAbsenceDays'] == 'Above-7').sum()
-                gender_total = len(gender_data)
+                datos_genero = df[df['gender'] == genero]
+                cantidad_ausencias_altas = (datos_genero['StudentAbsenceDays'] == 'Above-7').sum()
+                total_genero = len(datos_genero)
                 
-                if gender_total > 0:
-                    high_absence_rate = (high_absence_count / gender_total) * 100
-                    attendance_analysis.append({
-                        'Category': f'Gender {gender} - High Absence Rate',
-                        'Count': high_absence_count,
-                        'Percentage': f'{high_absence_rate:.1f}%',
-                        'Analysis_Type': 'By Gender'
+                if total_genero > 0:
+                    tasa_ausencias_altas = (cantidad_ausencias_altas / total_genero) * 100
+                    analisis_asistencia.append({
+                        'Categoria': f'Género {genero} - Tasa de Ausencias Altas',
+                        'Cantidad': cantidad_ausencias_altas,
+                        'Porcentaje': f'{tasa_ausencias_altas:.1f}%',
+                        'Tipo_Analisis': 'Por Género'
                     })
         
-        result_df = pd.DataFrame(attendance_analysis)
-        logger.info(f"Attendance analysis completed with {len(result_df)} insights")
-        return result_df
+        df_resultado = pd.DataFrame(analisis_asistencia)
+        logger.info(f"Análisis de asistencia completado con {len(df_resultado)} insights")
+        return df_resultado
         
     except Exception as e:
-        logger.error(f"Error analyzing attendance patterns: {e}")
+        logger.error(f"Error analizando patrones de asistencia: {e}")
         return pd.DataFrame()
 
-def get_low_participation_students(df: pd.DataFrame) -> pd.DataFrame:
+# Alias de compatibilidad
+def analyze_attendance_patterns(df: pd.DataFrame) -> pd.DataFrame:
+    """Alias de compatibilidad para analizar_patrones_asistencia"""
+    return analizar_patrones_asistencia(df)
+
+def obtener_estudiantes_baja_participacion(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Identify students with consistently low participation across metrics.
+    Identifica estudiantes con consistentemente baja participación en todas las métricas.
     
     Args:
-        df: DataFrame containing student data
+        df: DataFrame conteniendo datos de estudiantes
         
     Returns:
-        DataFrame containing students with low participation
+        DataFrame conteniendo estudiantes con baja participación
     """
     try:
-        log_analysis_step("Identifying low participation students")
+        log_analysis_step("Identificando estudiantes con baja participación")
         
-        participation_cols = ['RaisedHands', 'VisitedResources', 'AnnouncementsView', 'Discussion']
-        available_cols = [col for col in participation_cols if col in df.columns]
+        columnas_participacion = ['RaisedHands', 'VisitedResources', 'AnnouncementsView', 'Discussion']
+        columnas_disponibles = [col for col in columnas_participacion if col in df.columns]
         
-        if len(available_cols) < 2:
-            logger.warning("Insufficient participation columns for analysis")
+        if len(columnas_disponibles) < 2:
+            logger.warning("Columnas de participación insuficientes para el análisis")
             return pd.DataFrame()
         
-        # Calculate participation thresholds (bottom 25th percentile)
-        thresholds = {}
-        for col in available_cols:
-            thresholds[col] = df[col].quantile(0.25)
+        # Calcular umbrales de participación (percentil 25 inferior)
+        umbrales = {}
+        for col in columnas_disponibles:
+            umbrales[col] = df[col].quantile(0.25)
         
-        # Identify low participation students
-        low_participation = df.copy()
-        low_participation['LowParticipationCount'] = 0
-        low_participation['LowParticipationAreas'] = ''
+        # Identificar estudiantes con baja participación
+        baja_participacion = df.copy()
+        baja_participacion['ContadorBajaParticipacion'] = 0
+        baja_participacion['AreasBajaParticipacion'] = ''
         
-        for col in available_cols:
-            is_low = low_participation[col] <= thresholds[col]
+        for col in columnas_disponibles:
+            es_bajo = baja_participacion[col] <= umbrales[col]
             
-            # Use iloc for safer assignment
-            for idx in low_participation.index[is_low]:
-                low_participation.at[idx, 'LowParticipationCount'] += 1
-                low_participation.at[idx, 'LowParticipationAreas'] += f'{col}; '
+            # Usar iloc para asignación más segura
+            for idx in baja_participacion.index[es_bajo]:
+                baja_participacion.at[idx, 'ContadorBajaParticipacion'] += 1
+                baja_participacion.at[idx, 'AreasBajaParticipacion'] += f'{col}; '
         
-        # Consider students with low participation in 50% or more areas as concerning
-        threshold_count = max(1, len(available_cols) // 2)
-        concerning_students = low_participation[low_participation['LowParticipationCount'] >= threshold_count].copy()
+        # Considerar estudiantes con baja participación en 50% o más áreas como preocupante
+        umbral_contador = max(1, len(columnas_disponibles) // 2)
+        estudiantes_preocupantes = baja_participacion[baja_participacion['ContadorBajaParticipacion'] >= umbral_contador].copy()
         
-        # Clean up areas string
-        concerning_students['LowParticipationAreas'] = concerning_students['LowParticipationAreas'].str.rstrip('; ')
+        # Limpiar cadena de áreas
+        estudiantes_preocupantes['AreasBajaParticipacion'] = estudiantes_preocupantes['AreasBajaParticipacion'].str.rstrip('; ')
         
-        # Add overall participation score
-        if available_cols:
-            concerning_students['OverallParticipationScore'] = concerning_students[available_cols].mean(axis=1)
+        # Agregar puntaje general de participación
+        if columnas_disponibles:
+            estudiantes_preocupantes['PuntajeParticipacionGeneral'] = estudiantes_preocupantes[columnas_disponibles].mean(axis=1)
         
-        logger.info(f"Found {len(concerning_students)} students with low participation")
-        return concerning_students.sort_values('LowParticipationCount', ascending=False)
+        logger.info(f"Encontrados {len(estudiantes_preocupantes)} estudiantes con baja participación")
+        return estudiantes_preocupantes.sort_values('ContadorBajaParticipacion', ascending=False)
         
     except Exception as e:
-        logger.error(f"Error identifying low participation students: {e}")
+        logger.error(f"Error identificando estudiantes con baja participación: {e}")
         return pd.DataFrame()
 
-def generate_risk_report(df: pd.DataFrame) -> Dict[str, Any]:
+# Alias de compatibilidad
+def get_low_participation_students(df: pd.DataFrame) -> pd.DataFrame:
+    """Alias de compatibilidad para obtener_estudiantes_baja_participacion"""
+    return obtener_estudiantes_baja_participacion(df)
+
+def generar_reporte_riesgo(df: pd.DataFrame) -> Dict[str, Any]:
     """
-    Generate a comprehensive risk assessment report.
+    Genera un reporte completo de evaluación de riesgo.
     
     Args:
-        df: DataFrame containing student data
+        df: DataFrame conteniendo datos de estudiantes
         
     Returns:
-        Dictionary containing comprehensive risk analysis
+        Diccionario conteniendo análisis completo de riesgo
     """
     try:
-        log_analysis_step("Generating comprehensive risk report")
+        log_analysis_step("Generando reporte completo de riesgo")
         
-        report = {
-            'summary': {},
-            'at_risk_students': {},
-            'attendance_analysis': {},
-            'participation_analysis': {},
-            'recommendations': []
+        reporte = {
+            'resumen': {},
+            'estudiantes_en_riesgo': {},
+            'analisis_asistencia': {},
+            'analisis_participacion': {},
+            'recomendaciones': []
         }
         
-        total_students = len(df)
-        report['summary']['total_students'] = total_students
+        total_estudiantes = len(df)
+        reporte['resumen']['total_estudiantes'] = total_estudiantes
         
-        # Get at-risk students
-        at_risk_df = identify_at_risk_students(df)
-        report['at_risk_students']['count'] = len(at_risk_df)
-        report['at_risk_students']['percentage'] = format_percentage(len(at_risk_df) / total_students)
+        # Obtener estudiantes en riesgo
+        df_en_riesgo = identificar_estudiantes_en_riesgo(df)
+        reporte['estudiantes_en_riesgo']['cantidad'] = len(df_en_riesgo)
+        reporte['estudiantes_en_riesgo']['porcentaje'] = format_percentage(len(df_en_riesgo) / total_estudiantes)
         
-        if not at_risk_df.empty:
-            # Risk score distribution
-            risk_score_dist = at_risk_df['RiskScore'].value_counts().sort_index()
-            report['at_risk_students']['risk_score_distribution'] = risk_score_dist.to_dict()
+        if not df_en_riesgo.empty:
+            # Distribución de puntajes de riesgo
+            distribucion_puntaje_riesgo = df_en_riesgo['PuntajeRiesgo'].value_counts().sort_index()
+            reporte['estudiantes_en_riesgo']['distribucion_puntaje_riesgo'] = distribucion_puntaje_riesgo.to_dict()
             
-            # Most common risk factors
-            all_factors = ' '.join(at_risk_df['RiskFactors'].fillna(''))
-            factor_words = [factor.strip() for factor in all_factors.split(';') if factor.strip()]
+            # Factores de riesgo más comunes
+            todos_factores = ' '.join(df_en_riesgo['FactoresRiesgo'].fillna(''))
+            palabras_factores = [factor.strip() for factor in todos_factores.split(';') if factor.strip()]
             from collections import Counter
-            factor_counts = Counter(factor_words)
-            report['at_risk_students']['common_risk_factors'] = dict(factor_counts.most_common(5))
+            conteos_factores = Counter(palabras_factores)
+            reporte['estudiantes_en_riesgo']['factores_riesgo_comunes'] = dict(conteos_factores.most_common(5))
             
-            # Subject-wise at-risk distribution
-            if 'Topic' in at_risk_df.columns:
-                subject_risk = at_risk_df['Topic'].value_counts().head(5).to_dict()
-                report['at_risk_students']['subjects_with_most_at_risk'] = subject_risk
+            # Distribución de riesgo por materia
+            if 'Topic' in df_en_riesgo.columns:
+                riesgo_materia = df_en_riesgo['Topic'].value_counts().head(5).to_dict()
+                reporte['estudiantes_en_riesgo']['materias_con_mas_riesgo'] = riesgo_materia
         
-        # Attendance analysis
-        attendance_df = analyze_attendance_patterns(df)
-        if not attendance_df.empty:
-            high_absence_overall = attendance_df[
-                attendance_df['Category'].str.contains('Above-7')
-            ].iloc[0] if len(attendance_df) > 0 else None
+        # Análisis de asistencia
+        df_asistencia = analizar_patrones_asistencia(df)
+        if not df_asistencia.empty:
+            ausencias_altas_general = df_asistencia[
+                df_asistencia['Categoria'].str.contains('Above-7')
+            ].iloc[0] if len(df_asistencia) > 0 else None
             
-            if high_absence_overall is not None:
-                report['attendance_analysis']['high_absence_rate'] = high_absence_overall['Percentage']
+            if ausencias_altas_general is not None:
+                reporte['analisis_asistencia']['tasa_ausencias_altas'] = ausencias_altas_general['Porcentaje']
         
-        # Participation analysis
-        low_participation_df = get_low_participation_students(df)
-        report['participation_analysis']['low_participation_count'] = len(low_participation_df)
-        report['participation_analysis']['low_participation_percentage'] = format_percentage(
-            len(low_participation_df) / total_students
+        # Análisis de participación
+        df_baja_participacion = obtener_estudiantes_baja_participacion(df)
+        reporte['analisis_participacion']['cantidad_baja_participacion'] = len(df_baja_participacion)
+        reporte['analisis_participacion']['porcentaje_baja_participacion'] = format_percentage(
+            len(df_baja_participacion) / total_estudiantes
         )
         
-        # Performance correlation with risk factors
+        # Correlación de rendimiento con factores de riesgo
         if 'Class' in df.columns:
-            performance_risk = {}
-            for performance in df['Class'].unique():
-                if pd.isna(performance):
+            riesgo_rendimiento = {}
+            for rendimiento in df['Class'].unique():
+                if pd.isna(rendimiento):
                     continue
-                perf_students = df[df['Class'] == performance]
-                at_risk_in_perf = identify_at_risk_students(perf_students)
-                risk_rate = len(at_risk_in_perf) / len(perf_students) if len(perf_students) > 0 else 0
-                performance_risk[performance] = format_percentage(risk_rate)
+                estudiantes_rendimiento = df[df['Class'] == rendimiento]
+                en_riesgo_en_rendimiento = identificar_estudiantes_en_riesgo(estudiantes_rendimiento)
+                tasa_riesgo = len(en_riesgo_en_rendimiento) / len(estudiantes_rendimiento) if len(estudiantes_rendimiento) > 0 else 0
+                riesgo_rendimiento[rendimiento] = format_percentage(tasa_riesgo)
             
-            report['summary']['risk_by_performance'] = performance_risk
+            reporte['resumen']['riesgo_por_rendimiento'] = riesgo_rendimiento
         
-        # Generate recommendations
-        recommendations = []
+        # Generar recomendaciones
+        recomendaciones = []
         
-        if len(at_risk_df) > 0:
-            recommendations.append(f"Immediate attention needed for {len(at_risk_df)} students identified as at-risk")
+        if len(df_en_riesgo) > 0:
+            recomendaciones.append(f"Se necesita atención inmediata para {len(df_en_riesgo)} estudiantes identificados en riesgo")
         
-        if not attendance_df.empty:
-            high_absence_rate = attendance_df[attendance_df['Category'].str.contains('Above-7')]
-            if not high_absence_rate.empty:
-                rate = high_absence_rate.iloc[0]['Percentage']
-                recommendations.append(f"Address attendance issues - {rate} of students have high absence rates")
+        if not df_asistencia.empty:
+            tasa_ausencias_altas = df_asistencia[df_asistencia['Categoria'].str.contains('Above-7')]
+            if not tasa_ausencias_altas.empty:
+                tasa = tasa_ausencias_altas.iloc[0]['Porcentaje']
+                recomendaciones.append(f"Abordar problemas de asistencia - {tasa} de estudiantes tienen altas tasas de ausencia")
         
-        if len(low_participation_df) > 0:
-            recommendations.append(f"Implement engagement strategies for {len(low_participation_df)} students with low participation")
+        if len(df_baja_participacion) > 0:
+            recomendaciones.append(f"Implementar estrategias de participación para {len(df_baja_participacion)} estudiantes con baja participación")
         
-        # Subject-specific recommendations
-        if 'Topic' in df.columns and len(at_risk_df) > 0:
-            subject_risks = at_risk_df['Topic'].value_counts()
-            if len(subject_risks) > 0:
-                highest_risk_subject = subject_risks.index[0]
-                recommendations.append(f"Focus intervention efforts on {highest_risk_subject} subject with highest at-risk student count")
+        # Recomendaciones específicas por materia
+        if 'Topic' in df.columns and len(df_en_riesgo) > 0:
+            riesgos_materia = df_en_riesgo['Topic'].value_counts()
+            if len(riesgos_materia) > 0:
+                materia_mayor_riesgo = riesgos_materia.index[0]
+                recomendaciones.append(f"Enfocar esfuerzos de intervención en la materia {materia_mayor_riesgo} con mayor cantidad de estudiantes en riesgo")
         
-        recommendations.append("Monitor parent engagement and satisfaction levels regularly")
-        recommendations.append("Implement early warning system for students showing multiple risk factors")
+        recomendaciones.append("Monitorear regularmente los niveles de participación y satisfacción de los padres")
+        recomendaciones.append("Implementar sistema de alerta temprana para estudiantes que muestren múltiples factores de riesgo")
         
-        report['recommendations'] = recommendations
+        reporte['recomendaciones'] = recomendaciones
         
-        logger.info("Comprehensive risk report generated successfully")
-        return report
+        logger.info("Reporte completo de riesgo generado exitosamente")
+        return reporte
         
     except Exception as e:
-        logger.error(f"Error generating risk report: {e}")
+        logger.error(f"Error generando reporte de riesgo: {e}")
         return {}
 
-def identify_intervention_priorities(df: pd.DataFrame) -> pd.DataFrame:
+# Alias de compatibilidad
+def generate_risk_report(df: pd.DataFrame) -> Dict[str, Any]:
+    """Alias de compatibilidad para generar_reporte_riesgo"""
+    return generar_reporte_riesgo(df)
+
+def identificar_prioridades_intervencion(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Identify and prioritize students who need immediate intervention.
+    Identifica y prioriza estudiantes que necesitan intervención inmediata.
     
     Args:
-        df: DataFrame containing student data
+        df: DataFrame conteniendo datos de estudiantes
         
     Returns:
-        DataFrame with prioritized intervention list
+        DataFrame con lista priorizada de intervención
     """
     try:
-        log_analysis_step("Identifying intervention priorities")
+        log_analysis_step("Identificando prioridades de intervención")
         
-        # Get at-risk students
-        at_risk_df = identify_at_risk_students(df)
+        # Obtener estudiantes en riesgo
+        df_en_riesgo = identificar_estudiantes_en_riesgo(df)
         
-        if at_risk_df.empty:
-            logger.info("No students identified as needing intervention")
+        if df_en_riesgo.empty:
+            logger.info("No se identificaron estudiantes que necesiten intervención")
             return pd.DataFrame()
         
-        # Create intervention priority scoring
-        intervention_df = at_risk_df.copy()
-        intervention_df['InterventionPriority'] = 'Medium'
-        intervention_df['InterventionActions'] = ''
+        # Crear puntuación de prioridad de intervención
+        df_intervencion = df_en_riesgo.copy()
+        df_intervencion['PrioridadIntervencion'] = 'Media'
+        df_intervencion['AccionesIntervencion'] = ''
         
-        # High priority: High risk score + multiple factors
-        high_priority = (
-            (intervention_df['RiskScore'] >= 5) |
-            (intervention_df['RiskFactors'].str.contains('Low Performance')) &
-            (intervention_df['RiskFactors'].str.contains('High Absences'))
+        # Alta prioridad: Alto puntaje de riesgo + múltiples factores
+        prioridad_alta = (
+            (df_intervencion['PuntajeRiesgo'] >= 5) |
+            (df_intervencion['FactoresRiesgo'].str.contains('Bajo Rendimiento')) &
+            (df_intervencion['FactoresRiesgo'].str.contains('Ausencias Altas'))
         )
-        intervention_df.loc[high_priority, 'InterventionPriority'] = 'High'
+        df_intervencion.loc[prioridad_alta, 'PrioridadIntervencion'] = 'Alta'
         
-        # Very High priority: Multiple critical factors
-        very_high_priority = (
-            (intervention_df['RiskScore'] >= 7) |
+        # Prioridad muy alta: Múltiples factores críticos
+        prioridad_muy_alta = (
+            (df_intervencion['PuntajeRiesgo'] >= 7) |
             (
-                (intervention_df['RiskFactors'].str.contains('Low Performance')) &
-                (intervention_df['RiskFactors'].str.contains('High Absences')) &
-                (intervention_df['RiskFactors'].str.contains('Low Engagement'))
+                (df_intervencion['FactoresRiesgo'].str.contains('Bajo Rendimiento')) &
+                (df_intervencion['FactoresRiesgo'].str.contains('Ausencias Altas')) &
+                (df_intervencion['FactoresRiesgo'].str.contains('Baja Participación'))
             )
         )
-        intervention_df.loc[very_high_priority, 'InterventionPriority'] = 'Very High'
+        df_intervencion.loc[prioridad_muy_alta, 'PrioridadIntervencion'] = 'Muy Alta'
         
-        # Generate specific intervention actions
-        for idx, row in intervention_df.iterrows():
-            actions = []
+        # Generar acciones específicas de intervención
+        for idx, fila in df_intervencion.iterrows():
+            acciones = []
             
-            if 'Low Performance' in row['RiskFactors']:
-                actions.append('Academic tutoring')
+            if 'Bajo Rendimiento' in fila['FactoresRiesgo']:
+                acciones.append('Tutoría académica')
             
-            if 'High Absences' in row['RiskFactors']:
-                actions.append('Attendance monitoring')
+            if 'Ausencias Altas' in fila['FactoresRiesgo']:
+                acciones.append('Monitoreo de asistencia')
             
-            if 'Low Engagement' in row['RiskFactors']:
-                actions.append('Engagement activities')
+            if 'Baja Participación' in fila['FactoresRiesgo']:
+                acciones.append('Actividades de participación')
             
-            if 'Poor Parent Satisfaction' in row['RiskFactors']:
-                actions.append('Parent consultation')
+            if 'Pobre Satisfacción Padres' in fila['FactoresRiesgo']:
+                acciones.append('Consulta con padres')
             
-            if 'No Parent Survey' in row['RiskFactors']:
-                actions.append('Parent outreach')
+            if 'Sin Encuesta Padres' in fila['FactoresRiesgo']:
+                acciones.append('Alcance a padres')
             
-            intervention_df.at[idx, 'InterventionActions'] = '; '.join(actions)
+            df_intervencion.at[idx, 'AccionesIntervencion'] = '; '.join(acciones)
         
-        # Sort by priority and risk score
-        priority_order = {'Very High': 4, 'High': 3, 'Medium': 2, 'Low': 1}
-        intervention_df['PriorityOrder'] = intervention_df['InterventionPriority'].map(priority_order)
-        intervention_df = intervention_df.sort_values(['PriorityOrder', 'RiskScore'], ascending=[False, False])
+        # Ordenar por prioridad y puntaje de riesgo
+        orden_prioridad = {'Muy Alta': 4, 'Alta': 3, 'Media': 2, 'Baja': 1}
+        df_intervencion['OrdenPrioridad'] = df_intervencion['PrioridadIntervencion'].map(orden_prioridad)
+        df_intervencion = df_intervencion.sort_values(['OrdenPrioridad', 'PuntajeRiesgo'], ascending=[False, False])
         
-        # Select relevant columns for intervention report
-        intervention_columns = [
+        # Seleccionar columnas relevantes para reporte de intervención
+        columnas_intervencion = [
             'gender', 'Topic', 'Semester', 'Class', 'StudentAbsenceDays',
-            'TotalEngagement', 'RiskScore', 'RiskFactors', 
-            'InterventionPriority', 'InterventionActions'
+            'TotalEngagement', 'PuntajeRiesgo', 'FactoresRiesgo', 
+            'PrioridadIntervencion', 'AccionesIntervencion'
         ]
         
-        # Filter to existing columns
-        available_columns = [col for col in intervention_columns if col in intervention_df.columns]
-        result_df = intervention_df[available_columns].reset_index(drop=True)
+        # Filtrar a columnas existentes
+        columnas_disponibles = [col for col in columnas_intervencion if col in df_intervencion.columns]
+        df_resultado = df_intervencion[columnas_disponibles].reset_index(drop=True)
         
-        logger.info(f"Intervention priorities identified for {len(result_df)} students")
-        return result_df
+        logger.info(f"Prioridades de intervención identificadas para {len(df_resultado)} estudiantes")
+        return df_resultado
         
     except Exception as e:
-        logger.error(f"Error identifying intervention priorities: {e}")
+        logger.error(f"Error identificando prioridades de intervención: {e}")
         return pd.DataFrame()
 
+# Alias de compatibilidad
+def identify_intervention_priorities(df: pd.DataFrame) -> pd.DataFrame:
+    """Alias de compatibilidad para identificar_prioridades_intervencion"""
+    return identificar_prioridades_intervencion(df)
+
 if __name__ == "__main__":
-    # Test the risk analysis module
+    # Prueba del módulo de análisis de riesgo
     try:
         import sys
         import os
@@ -462,34 +487,34 @@ if __name__ == "__main__":
         from src.data.data_loader import load_and_validate_data
         from src.data.data_cleaner import clean_student_data
         
-        # Load and clean data
+        # Cargar y limpiar datos
         df = load_and_validate_data()
-        df_clean = clean_student_data(df)
+        df_limpio = clean_student_data(df)
         
-        print("Data loaded and cleaned successfully!")
+        print("¡Datos cargados y limpiados exitosamente!")
         
-        # Test risk analysis functions
-        at_risk = identify_at_risk_students(df_clean)
-        print(f"At-risk students identified: {len(at_risk)}")
+        # Probar funciones de análisis de riesgo
+        en_riesgo = identificar_estudiantes_en_riesgo(df_limpio)
+        print(f"Estudiantes en riesgo identificados: {len(en_riesgo)}")
         
-        attendance_analysis = analyze_attendance_patterns(df_clean)
-        print(f"Attendance analysis completed: {len(attendance_analysis)} insights")
+        analisis_asistencia = analizar_patrones_asistencia(df_limpio)
+        print(f"Análisis de asistencia completado: {len(analisis_asistencia)} insights")
         
-        low_participation = get_low_participation_students(df_clean)
-        print(f"Low participation students: {len(low_participation)}")
+        baja_participacion = obtener_estudiantes_baja_participacion(df_limpio)
+        print(f"Estudiantes con baja participación: {len(baja_participacion)}")
         
-        risk_report = generate_risk_report(df_clean)
-        print(f"Risk report generated with {len(risk_report)} sections")
+        reporte_riesgo = generar_reporte_riesgo(df_limpio)
+        print(f"Reporte de riesgo generado con {len(reporte_riesgo)} secciones")
         
-        intervention_priorities = identify_intervention_priorities(df_clean)
-        print(f"Intervention priorities identified for {len(intervention_priorities)} students")
+        prioridades_intervencion = identificar_prioridades_intervencion(df_limpio)
+        print(f"Prioridades de intervención identificadas para {len(prioridades_intervencion)} estudiantes")
         
-        # Display summary
-        if risk_report and 'summary' in risk_report:
-            print(f"\nRisk Summary:")
-            print(f"- Total students: {risk_report['summary']['total_students']}")
-            if 'at_risk_students' in risk_report:
-                print(f"- At-risk students: {risk_report['at_risk_students']['count']} ({risk_report['at_risk_students']['percentage']})")
+        # Mostrar resumen
+        if reporte_riesgo and 'resumen' in reporte_riesgo:
+            print(f"\nResumen de Riesgo:")
+            print(f"- Total de estudiantes: {reporte_riesgo['resumen']['total_estudiantes']}")
+            if 'estudiantes_en_riesgo' in reporte_riesgo:
+                print(f"- Estudiantes en riesgo: {reporte_riesgo['estudiantes_en_riesgo']['cantidad']} ({reporte_riesgo['estudiantes_en_riesgo']['porcentaje']})")
         
     except Exception as e:
-        print(f"Error testing risk analysis module: {e}")
+        print(f"Error probando módulo de análisis de riesgo: {e}")

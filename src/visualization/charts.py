@@ -1,6 +1,6 @@
 """
-Visualization module using Seaborn for the Academic Data Analysis System.
-Creates comprehensive charts and graphs for academic performance analysis.
+Módulo de visualización usando Seaborn para el Sistema de Análisis de Datos Académicos.
+Crea gráficos y diagramas integrales para el análisis de rendimiento académico.
 """
 
 import pandas as pd
@@ -25,8 +25,8 @@ sns.set_style(CHART_STYLE)
 plt.rcParams['figure.dpi'] = DPI
 sns.set_palette(COLOR_PALETTE)
 
-def setup_chart_style() -> None:
-    """Configure the global chart styling for consistent visualization."""
+def configurar_estilo_graficos() -> None:
+    """Configurar el estilo global de gráficos para visualización consistente."""
     try:
         sns.set_style(CHART_STYLE)
         plt.rcParams.update({
@@ -41,68 +41,68 @@ def setup_chart_style() -> None:
             'axes.grid': True,
             'grid.alpha': 0.3
         })
-        logger.info("Chart styling configured successfully")
+        logger.info("Estilo de gráficos configurado exitosamente")
     except Exception as e:
-        logger.error(f"Error setting up chart style: {e}")
+        logger.error(f"Error configurando estilo de gráficos: {e}")
 
-def create_grade_distribution_chart(df: pd.DataFrame, save_path: Optional[str] = None) -> mfig.Figure:
+def crear_grafico_distribucion_calificaciones(df: pd.DataFrame, ruta_guardado: Optional[str] = None) -> mfig.Figure:
     """
-    Create a bar chart showing the distribution of performance grades.
+    Crear un gráfico de barras mostrando la distribución de calificaciones de rendimiento.
     
     Args:
-        df: DataFrame containing student data
-        save_path: Optional path to save the chart
+        df: DataFrame conteniendo datos de estudiantes
+        ruta_guardado: Ruta opcional para guardar el gráfico
         
     Returns:
-        Matplotlib figure object
+        Objeto figura de Matplotlib
     """
     try:
-        log_analysis_step("Creating grade distribution chart")
+        log_analysis_step("Creando gráfico de distribución de calificaciones")
         
         fig, ax = plt.subplots(figsize=FIGURE_SIZE)
         
         if 'Class' not in df.columns:
-            logger.warning("Class column not found for grade distribution")
+            logger.warning("Columna Class no encontrada para distribución de calificaciones")
             return fig
         
-        # Create count plot
-        grade_counts = df['Class'].value_counts().sort_index()
-        colors = sns.color_palette(COLOR_PALETTE, n_colors=len(grade_counts))
+        # Crear gráfico de conteo
+        conteo_calificaciones = df['Class'].value_counts().sort_index()
+        colores = sns.color_palette(COLOR_PALETTE, n_colors=len(conteo_calificaciones))
         
-        bars = ax.bar(grade_counts.index, grade_counts.values.tolist(), color=colors, alpha=0.8)
+        barras = ax.bar(conteo_calificaciones.index, conteo_calificaciones.values.tolist(), color=colores, alpha=0.8)
         
-        # Add value labels on bars
-        for bar in bars:
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width()/2., height,
-                   f'{int(height)}',
+        # Agregar etiquetas de valor en las barras
+        for barra in barras:
+            altura = barra.get_height()
+            ax.text(barra.get_x() + barra.get_width()/2., altura,
+                   f'{int(altura)}',
                    ha='center', va='bottom', fontweight='bold')
         
-        # Customize the chart
-        ax.set_title('Distribution of Student Performance Grades', fontsize=16, fontweight='bold', pad=20)
-        ax.set_xlabel('Performance Grade', fontsize=12)
-        ax.set_ylabel('Number of Students', fontsize=12)
+        # Personalizar el gráfico
+        ax.set_title('Distribución de Calificaciones de Rendimiento Estudiantil', fontsize=16, fontweight='bold', pad=20)
+        ax.set_xlabel('Calificación de Rendimiento', fontsize=12)
+        ax.set_ylabel('Número de Estudiantes', fontsize=12)
         
-        # Add percentage labels
-        total_students = len(df)
-        for i, (grade, count) in enumerate(grade_counts.items()):
-            percentage = (count / total_students) * 100
-            ax.text(i, count + total_students * 0.01, f'{percentage:.1f}%',
+        # Agregar etiquetas de porcentaje
+        total_estudiantes = len(df)
+        for i, (calificacion, conteo) in enumerate(conteo_calificaciones.items()):
+            porcentaje = (conteo / total_estudiantes) * 100
+            ax.text(i, conteo + total_estudiantes * 0.01, f'{porcentaje:.1f}%',
                    ha='center', va='bottom', fontsize=10, style='italic')
         
         plt.tight_layout()
         
-        # Save if path provided
-        if save_path:
-            create_output_directory(Path(save_path).parent)
-            plt.savefig(save_path, dpi=DPI, bbox_inches='tight')
-            logger.info(f"Grade distribution chart saved to {save_path}")
+        # Guardar si se proporciona ruta
+        if ruta_guardado:
+            create_output_directory(Path(ruta_guardado).parent)
+            plt.savefig(ruta_guardado, dpi=DPI, bbox_inches='tight')
+            logger.info(f"Gráfico de distribución de calificaciones guardado en {ruta_guardado}")
         
-        logger.info("Grade distribution chart created successfully")
+        logger.info("Gráfico de distribución de calificaciones creado exitosamente")
         return fig
         
     except Exception as e:
-        logger.error(f"Error creating grade distribution chart: {e}")
+        logger.error(f"Error creando gráfico de distribución de calificaciones: {e}")
         return plt.figure()
 
 def create_subject_comparison_bar(df: pd.DataFrame, save_path: Optional[str] = None) -> mfig.Figure:
@@ -518,7 +518,7 @@ def create_all_visualizations(df: pd.DataFrame, stats: Dict[str, Any],
         
         # Define chart creation functions and their save paths
         chart_configs = [
-            ('grade_distribution', create_grade_distribution_chart, 'grade_distribution.png'),
+            ('grade_distribution', crear_grafico_distribucion_calificaciones, 'grade_distribution.png'),
             ('subject_comparison', create_subject_comparison_bar, 'subject_comparison.png'),
             ('semester_trends', create_semester_trend_line, 'semester_trends.png'),
             ('performance_scatter', create_performance_scatter, 'performance_scatter.png'),
@@ -544,42 +544,251 @@ def create_all_visualizations(df: pd.DataFrame, stats: Dict[str, Any],
         logger.error(f"Error creating all visualizations: {e}")
         return {}
 
-if __name__ == "__main__":
-    # Test the visualization module
+def crear_todas_visualizaciones(df: pd.DataFrame, stats: Dict[str, Any], 
+                              groups: Dict[str, Any], guardar_graficos: bool = False) -> Dict[str, Any]:
+    """
+    Crear todos los gráficos de visualización para el análisis académico.
+    
+    Args:
+        df: DataFrame limpio con datos de estudiantes
+        stats: Resultados del análisis estadístico
+        groups: Resultados del análisis de agrupación
+        guardar_graficos: Si guardar gráficos en archivos
+        
+    Returns:
+        Diccionario conteniendo todas las figuras creadas
+    """
     try:
-        import sys
-        import os
+        log_analysis_step("Creando todos los gráficos de visualización")
         
-        # Add project root to path  
-        project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        if project_root not in sys.path:
-            sys.path.insert(0, project_root)
+        # Configurar estilo de gráficos
+        configurar_estilo_graficos()
         
-        # Import modules - ignore static analysis warnings, runtime works fine
-        from src.data.data_loader import load_and_validate_data  # type: ignore
-        from src.data.data_cleaner import clean_student_data  # type: ignore
-        from src.analysis.statistics import calculate_all_statistics  # type: ignore
-        from src.analysis.grouping import perform_all_groupings  # type: ignore
+        graficos = {}
         
-        # Load and prepare data
-        df = load_and_validate_data()
-        df_clean = clean_student_data(df)
-        stats = calculate_all_statistics(df_clean)
-        groups = perform_all_groupings(df_clean)
+        # Definir configuraciones de gráficos con nombres en español
+        configuraciones_graficos = [
+            ('distribucion_calificaciones', crear_grafico_distribucion_calificaciones, 'distribucion_calificaciones.png'),
+            ('comparacion_materias', create_subject_comparison_bar, 'comparacion_materias.png'),
+            ('tendencias_semestre', create_semester_trend_line, 'tendencias_semestre.png'),
+            ('dispersion_rendimiento', create_performance_scatter, 'dispersion_rendimiento.png'),
+            ('mapa_calor_asistencia', create_attendance_heatmap, 'mapa_calor_asistencia.png'),
+            ('analisis_demografico', create_demographic_analysis_charts, 'analisis_demografico.png'),
+            ('matriz_correlacion', create_engagement_correlation_matrix, 'matriz_correlacion.png')
+        ]
         
-        print("Data prepared successfully!")
+        # Crear cada gráfico
+        for nombre_grafico, funcion_grafico, nombre_archivo in configuraciones_graficos:
+            try:
+                ruta_guardado = str(CHARTS_DIR / nombre_archivo) if guardar_graficos else None
+                
+                # Crear el gráfico
+                figura = funcion_grafico(df, ruta_guardado)
+                
+                # Mapear nombres españoles a tipos originales para aplicar títulos
+                mapeo_tipos = {
+                    'distribucion_calificaciones': 'grade_distribution',
+                    'comparacion_materias': 'subject_comparison',
+                    'tendencias_semestre': 'semester_trends',
+                    'dispersion_rendimiento': 'performance_scatter',
+                    'mapa_calor_asistencia': 'attendance_heatmap',
+                    'analisis_demografico': 'demographic_analysis',
+                    'matriz_correlacion': 'correlation_matrix'
+                }
+                
+                tipo_original = mapeo_tipos.get(nombre_grafico)
+                
+                # Aplicar títulos en español y guardar nuevamente si es necesario
+                if guardar_graficos and figura and tipo_original and hasattr(figura, 'axes') and figura.axes:
+                    # Para gráficos con múltiples subplots, aplicar solo al primero
+                    ax_principal = figura.axes[0]
+                    aplicar_titulos_espanol(figura, ax_principal, tipo_original)
+                    
+                    # Guardar nuevamente con títulos en español
+                    figura.savefig(ruta_guardado, dpi=DPI, bbox_inches='tight')
+                    logger.info(f"Títulos en español aplicados y gráfico guardado: {ruta_guardado}")
+                
+                graficos[nombre_grafico] = figura
+                logger.info(f"Creado gráfico {nombre_grafico}")
+            except Exception as e:
+                logger.error(f"Error creando gráfico {nombre_grafico}: {e}")
+                graficos[nombre_grafico] = plt.figure()  # Figura vacía como respaldo
         
-        # Create visualizations
-        charts = create_all_visualizations(df_clean, stats, groups, save_charts=True)
-        print(f"Created {len(charts)} visualization charts")
-        
-        # Display the charts
-        print("Charts created:")
-        for chart_name in charts.keys():
-            print(f"  - {chart_name}")
-        
-        # Show one chart as example
-        plt.show()
+        logger.info(f"Todas las visualizaciones creadas exitosamente: {len(graficos)} gráficos")
+        return graficos
         
     except Exception as e:
-        print(f"Error testing visualization module: {e}")
+        logger.error(f"Error creando todas las visualizaciones: {e}")
+        return {}
+
+# Aliases en español para compatibilidad
+setup_chart_style = configurar_estilo_graficos
+crear_grafico_comparacion_materias = create_subject_comparison_bar
+crear_grafico_tendencias_semestre = create_semester_trend_line
+crear_grafico_dispersion_rendimiento = create_performance_scatter
+crear_mapa_calor_asistencia = create_attendance_heatmap
+crear_graficos_analisis_demografico = create_demographic_analysis_charts
+crear_matriz_correlacion_participacion = create_engagement_correlation_matrix
+
+# Alias para compatibilidad con nombres en inglés (manteniendo la función original)
+def create_all_visualizations_wrapper(df: pd.DataFrame, stats: Dict[str, Any], 
+                                     groups: Dict[str, Any], save_charts: bool = True) -> Dict[str, Any]:
+    """Wrapper function to maintain English API compatibility."""
+    return crear_todas_visualizaciones(df, stats, groups, save_charts)
+
+def traducir_titulos_graficos():
+    """Configurar matplotlib para mostrar títulos en español."""
+    plt.rcParams.update({
+        'axes.unicode_minus': False,
+        'font.family': ['DejaVu Sans', 'Arial', 'sans-serif']
+    })
+
+def aplicar_titulos_espanol(fig, ax, tipo_grafico: str):
+    """
+    Aplicar títulos en español a los gráficos existentes.
+    
+    Args:
+        fig: Figura de matplotlib
+        ax: Axes del gráfico (puede ser un solo ax o lista de axes)
+        tipo_grafico: Tipo de gráfico para determinar el título
+    """
+    titulos_espanol = {
+        'grade_distribution': {
+            'title': 'Distribución de Calificaciones de Rendimiento Estudiantil',
+            'xlabel': 'Calificación de Rendimiento',
+            'ylabel': 'Número de Estudiantes'
+        },
+        'subject_comparison': {
+            'title': 'Participación Promedio de Estudiantes por Materia',
+            'xlabel': 'Materia',
+            'ylabel': 'Puntuación Promedio de Participación Total'
+        },
+        'semester_trends': {
+            'title': 'Tendencias de Participación por Semestre',
+            'xlabel': 'Semestre',
+            'ylabel': 'Participación Promedio'
+        },
+        'performance_scatter': {
+            'title': 'Análisis de Métricas de Participación vs Rendimiento',
+            'xlabel': 'Participación Total',
+            'ylabel': 'Rendimiento Académico',
+            'subplots': {
+                'RaisedHands': {
+                    'title': 'Manos Alzadas vs Participación Total',
+                    'xlabel': 'Manos Alzadas',
+                    'ylabel': 'Participación Total'
+                },
+                'VisitedResources': {
+                    'title': 'Recursos Visitados vs Participación Total', 
+                    'xlabel': 'Recursos Visitados',
+                    'ylabel': 'Participación Total'
+                },
+                'AnnouncementsView': {
+                    'title': 'Anuncios Vistos vs Participación Total',
+                    'xlabel': 'Anuncios Vistos', 
+                    'ylabel': 'Participación Total'
+                },
+                'Discussion': {
+                    'title': 'Discusión vs Participación Total',
+                    'xlabel': 'Participación en Discusión',
+                    'ylabel': 'Participación Total'
+                }
+            }
+        },
+        'attendance_heatmap': {
+            'title': 'Mapa de Calor de Asistencia por Materia y Semestre',
+            'xlabel': 'Semestre',
+            'ylabel': 'Materia'
+        },
+        'demographic_analysis': {
+            'title': 'Análisis Demográfico de Participación Estudiantil',
+            'xlabel': 'Categorías Demográficas',
+            'ylabel': 'Distribución'
+        },
+        'correlation_matrix': {
+            'title': 'Matriz de Correlación de Métricas de Participación',
+            'xlabel': 'Variables de Participación',
+            'ylabel': 'Variables de Participación'
+        }
+    }
+    
+    if tipo_grafico in titulos_espanol:
+        titulos = titulos_espanol[tipo_grafico]
+        
+        # Caso especial para performance_scatter con subgráficos
+        if tipo_grafico == 'performance_scatter' and hasattr(fig, 'axes') and len(fig.axes) >= 4:
+            # Actualizar título principal
+            fig.suptitle(titulos['title'], fontsize=16, fontweight='bold')
+            
+            # Actualizar subgráficos individuales
+            engagement_cols = ['RaisedHands', 'VisitedResources', 'AnnouncementsView', 'Discussion']
+            for i, (col, subplot_ax) in enumerate(zip(engagement_cols, fig.axes[:4])):
+                if col in titulos['subplots']:
+                    subplot_titulos = titulos['subplots'][col]
+                    # Mantener la correlación si existe en el título original
+                    titulo_original = subplot_ax.get_title()
+                    if 'r =' in titulo_original:
+                        correlacion = titulo_original.split('r =')[1].strip().rstrip(')')
+                        nuevo_titulo = f"{subplot_titulos['title']}\n(r = {correlacion}"
+                    else:
+                        nuevo_titulo = subplot_titulos['title']
+                    
+                    subplot_ax.set_title(nuevo_titulo, fontsize=12, fontweight='bold')
+                    subplot_ax.set_xlabel(subplot_titulos['xlabel'], fontsize=10)
+                    subplot_ax.set_ylabel(subplot_titulos['ylabel'], fontsize=10)
+                    
+                    # Traducir leyenda si existe
+                    legend = subplot_ax.get_legend()
+                    if legend:
+                        legend.set_title('Calificación de Rendimiento')
+        else:
+            # Caso normal para gráficos simples
+            if isinstance(ax, list):
+                ax = ax[0]  # Tomar el primer axis si es una lista
+            ax.set_title(titulos['title'], fontsize=16, fontweight='bold', pad=20)
+            ax.set_xlabel(titulos['xlabel'], fontsize=12)
+            ax.set_ylabel(titulos['ylabel'], fontsize=12)
+        
+        # Asegurar que el layout se ajuste bien
+        fig.tight_layout()
+        
+        logger.info(f"Títulos en español aplicados para gráfico tipo: {tipo_grafico}")
+
+# Test the visualization module
+try:
+    import sys
+    import os
+    
+    # Add project root to path  
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    
+    # Import modules - ignore static analysis warnings, runtime works fine
+    from src.data.data_loader import load_and_validate_data  # type: ignore
+    from src.data.data_cleaner import clean_student_data  # type: ignore
+    from src.analysis.statistics import calculate_all_statistics  # type: ignore
+    from src.analysis.grouping import perform_all_groupings  # type: ignore
+    
+    # Load and prepare data
+    df = load_and_validate_data()
+    df_clean = clean_student_data(df)
+    stats = calculate_all_statistics(df_clean)
+    groups = perform_all_groupings(df_clean)
+    
+    print("Data prepared successfully!")
+    
+    # Create visualizations
+    charts = create_all_visualizations(df_clean, stats, groups, save_charts=True)
+    print(f"Created {len(charts)} visualization charts")
+    
+    # Display the charts
+    print("Charts created:")
+    for chart_name in charts.keys():
+        print(f"  - {chart_name}")
+    
+    # Show one chart as example
+    plt.show()
+    
+except Exception as e:
+    print(f"Error testing visualization module: {e}")

@@ -40,7 +40,7 @@ from src.analysis.grouping import group_by_demographics, perform_all_groupings
 from src.analysis.risk_analysis import generate_risk_report, identify_intervention_priorities
 
 # Import visualization modules
-from src.visualization.charts import create_all_visualizations
+from src.visualization.charts import crear_todas_visualizaciones
 
 # Import reporting modules
 from src.reports.apa_report import generate_apa_report
@@ -120,12 +120,13 @@ def ejecutar_analisis_completo(archivo_datos: Optional[str] = None,
         log_analysis_step("Identificando prioridades de intervención")
         prioridades_intervencion = identify_intervention_priorities(df_limpio)
         resultados['prioridades_intervencion'] = prioridades_intervencion
-        logger.info(f"Análisis de riesgo completado. {len(reporte_riesgo['at_risk_students'])} estudiantes en riesgo identificados")
+        logger.info(f"Análisis de riesgo completado. {reporte_riesgo['estudiantes_en_riesgo']['cantidad']} estudiantes en riesgo identificados")
         
         # Paso 6: Generar visualizaciones
+        archivos_graficos = {}
         if generar_graficos:
             log_analysis_step("Generando gráficos de visualización")
-            archivos_graficos = create_all_visualizations(df_limpio, estadisticas, reporte_riesgo)
+            archivos_graficos = crear_todas_visualizaciones(df_limpio, estadisticas, analisis_participacion, guardar_graficos=True)
             resultados['archivos_graficos'] = archivos_graficos
             logger.info(f"Generados {len(archivos_graficos)} gráficos de visualización")
         
@@ -133,8 +134,8 @@ def ejecutar_analisis_completo(archivo_datos: Optional[str] = None,
         if generar_reporte:
             log_analysis_step("Generando reporte PDF estilo APA")
             archivo_reporte = generate_apa_report(
-                df_limpio, estadisticas, analisis_demografico, 
-                analisis_participacion, reporte_riesgo
+                df_limpio, estadisticas, analisis_participacion, 
+                reporte_riesgo, archivos_graficos
             )
             resultados['archivo_reporte'] = archivo_reporte
             logger.info(f"Reporte estilo APA generado: {archivo_reporte}")
@@ -187,9 +188,9 @@ def imprimir_resumen_analisis(resultados: Dict[str, Any]) -> None:
     if resultados['reporte_riesgo']:
         riesgo = resultados['reporte_riesgo']
         print(f"\n⚠️  Análisis de Riesgo:")
-        print(f"   • Estudiantes en riesgo: {len(riesgo.get('at_risk_students', []))}")
-        print(f"   • Estudiantes con altas ausencias: {len(riesgo.get('high_absence_students', []))}")
-        print(f"   • Estudiantes con baja participación: {len(riesgo.get('low_participation_students', []))}")
+        print(f"   • Estudiantes en riesgo: {riesgo.get('estudiantes_en_riesgo', {}).get('cantidad', 0)}")
+        print(f"   • Estudiantes con altas ausencias: {riesgo.get('analisis_asistencia', {}).get('cantidad_ausencias_altas', 0)}")
+        print(f"   • Estudiantes con baja participación: {riesgo.get('analisis_participacion', {}).get('cantidad_baja_participacion', 0)}")
     
     # Archivos de salida
     print(f"\n📁 Archivos Generados:")
