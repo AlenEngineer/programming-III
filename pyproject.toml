@@ -8,5 +8,6 @@ dependencies = [
     "matplotlib>=3.10.3",
     "numpy>=2.3.1",
     "pandas>=2.3.1",
+    "reportlab>=4.4.2",
     "seaborn>=0.13.2",
 ]
