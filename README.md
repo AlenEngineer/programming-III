@@ -2,7 +2,7 @@
 
 Esta es la versión completamente traducida al español del Sistema de Análisis de Datos Académicos.
 
-## 🌐 Características en Español
+## 🌐 Características
 
 ### Interfaz Principal
 - Todos los mensajes de usuario en español
@@ -32,7 +32,7 @@ Esta es la versión completamente traducida al español del Sistema de Análisis
 
 ### Ejecutar Análisis Completo
 ```bash
-python main.py
+uv python main.py
 ```
 
 ### Importar en Python
@@ -96,13 +96,5 @@ salida/
 └── reportes/
     └── academic_analysis_report_YYYYMMDD_HHMMSS.pdf
 ```
-
-## 🏫 Ideal para Instituciones Educativas
-
-Este sistema está especialmente diseñado para:
-- Universidades de habla hispana
-- Instituciones educativas en América Latina
-- Análisis académico en español
-- Reportes académicos profesionales en español
 
 ¡El sistema está listo para uso en producción en entornos académicos de habla hispana!
