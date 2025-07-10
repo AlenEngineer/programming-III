@@ -1,6 +1,6 @@
 """
-Utility functions for the Academic Data Analysis System
-Common helper functions used across different modules.
+Funciones utilitarias para el Sistema de Análisis de Datos Académicos
+Funciones auxiliares comunes utilizadas en diferentes módulos.
 """
 
 import os
@@ -10,63 +10,63 @@ from typing import Union, Optional
 import pandas as pd
 import numpy as np
 
-def format_percentage(value: float, decimals: int = 2) -> str:
+def formatear_porcentaje(valor: float, decimales: int = 2) -> str:
     """
-    Format a decimal value as a percentage string.
+    Formatear un valor decimal como cadena de porcentaje.
     
     Args:
-        value: Decimal value to convert to percentage
-        decimals: Number of decimal places to show
+        valor: Valor decimal a convertir a porcentaje
+        decimales: Número de lugares decimales a mostrar
         
     Returns:
-        Formatted percentage string
+        Cadena de porcentaje formateada
     """
-    return f"{value * 100:.{decimals}f}%"
+    return f"{valor * 100:.{decimales}f}%"
 
-def safe_divide(numerator: Union[int, float], denominator: Union[int, float]) -> float:
+def division_segura(numerador: Union[int, float], denominador: Union[int, float]) -> float:
     """
-    Safely divide two numbers, returning 0 if denominator is 0.
+    Dividir dos números de forma segura, retornando 0 si el denominador es 0.
     
     Args:
-        numerator: The dividend
-        denominator: The divisor
+        numerador: El dividendo
+        denominador: El divisor
         
     Returns:
-        Division result or 0 if denominator is 0
+        Resultado de la división o 0 si el denominador es 0
     """
-    if denominator == 0:
+    if denominador == 0:
         return 0.0
-    return numerator / denominator
+    return numerador / denominador
 
-def create_output_directory(directory_path: Union[str, Path]) -> bool:
+def crear_directorio_salida(ruta_directorio: Union[str, Path]) -> bool:
     """
-    Create a directory if it doesn't exist.
+    Crear un directorio si no existe.
     
     Args:
-        directory_path: Path to the directory to create
+        ruta_directorio: Ruta al directorio a crear
         
     Returns:
-        True if directory was created or already exists, False otherwise
+        True si el directorio fue creado o ya existe, False en caso contrario
     """
     try:
-        Path(directory_path).mkdir(parents=True, exist_ok=True)
+        Path(ruta_directorio).mkdir(parents=True, exist_ok=True)
         return True
     except Exception as e:
-        logging.error(f"Failed to create directory {directory_path}: {e}")
+        logging.error(f"Falló al crear directorio {ruta_directorio}: {e}")
         return False
 
-def setup_logging(log_level: str = "INFO") -> None:
+def configurar_logging(nivel_log: str = "INFO") -> None:
     """
-    Set up logging configuration for the application.
+    Configurar el logging para la aplicación.
     
     Args:
-        log_level: Logging level (DEBUG, INFO, WARNING, ERROR)
+        nivel_log: Nivel de logging (DEBUG, INFO, WARNING, ERROR)
     """
     logging.basicConfig(
-        level=getattr(logging, log_level.upper()),
+        level=getattr(logging, nivel_log.upper()),
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[
-            logging.FileHandler('analysis.log'),
+            logging.FileHandler('analisis.log'),
             logging.StreamHandler()
         ]
     )
@@ -157,3 +157,10 @@ def export_to_csv(df: pd.DataFrame, filename: str, output_dir: Union[str, Path])
     df.to_csv(output_path, index=False)
     logging.info(f"Data exported to: {output_path}")
     return str(output_path)
+
+# Aliases para compatibilidad con código existente (English function names)
+# Compatibility aliases for existing code (English function names)
+format_percentage = formatear_porcentaje
+safe_divide = division_segura
+create_output_directory = crear_directorio_salida
+setup_logging = configurar_logging
