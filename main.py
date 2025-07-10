@@ -27,7 +27,7 @@ sys.path.insert(0, str(project_root))
 # Importar configuración
 from config import (
     DATA_FILE_PATH, OUTPUT_DIR, CHARTS_DIR, REPORTS_DIR,
-    TITULO_REPORTE, AUTOR_REPORTE, INSTITUCION
+    TITULO_REPORTE, AUTOR_REPORTE, INSTITUCION, REPOSITORIO_GITHUB
 )
 
 # Import data modules
@@ -213,6 +213,7 @@ def main():
     print(f"📊 Analizando datos de: {DATA_FILE_PATH}")
     print(f"🏫 Institución: {INSTITUCION}")
     print(f"👥 Autores: {AUTOR_REPORTE}")
+    print(f"🔗 Repositorio: {REPOSITORIO_GITHUB}")
     
     # Verificar si el archivo de datos existe
     if not DATA_FILE_PATH.exists():

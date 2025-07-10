@@ -32,7 +32,8 @@ class GeneradorReporteAPA:
     
     def __init__(self, titulo: str = "Reporte de Análisis de Datos Académicos", 
                  autor: str = "Sistema de Análisis de Datos Académicos",
-                 institucion: str = "Institución Educativa"):
+                 institucion: str = "Institución Educativa",
+                 repositorio_github: str = ""):
         """
         Inicializar el generador de reportes APA.
         
@@ -40,10 +41,12 @@ class GeneradorReporteAPA:
             titulo: Título del reporte
             autor: Autor del reporte
             institucion: Nombre de la institución
+            repositorio_github: URL del repositorio GitHub del proyecto
         """
         self.titulo = titulo
         self.autor = autor
         self.institucion = institucion
+        self.repositorio_github = repositorio_github
         self.styles = getSampleStyleSheet()
         self._configurar_estilos_personalizados()
         
@@ -201,7 +204,13 @@ class GeneradorReporteAPA:
         # Autor
         contenido.append(Paragraph(self.autor, self.styles['AutorAPA']))
         contenido.append(Paragraph(self.institucion, self.styles['AutorAPA']))
-        contenido.append(Spacer(1, 0.5*inch))
+        contenido.append(Spacer(1, 0.3*inch))
+        
+        # Repositorio GitHub
+        if hasattr(self, 'repositorio_github') and self.repositorio_github:
+            contenido.append(Paragraph(f"Repositorio: <link href='{self.repositorio_github}'>{self.repositorio_github}</link>", 
+                                     self.styles['AutorAPA']))
+            contenido.append(Spacer(1, 0.3*inch))
         
         # Fecha
         fecha_es = datetime.now().strftime("%d de %B de %Y")
@@ -479,10 +488,14 @@ def generar_reporte_apa(df: pd.DataFrame, stats: Dict[str, Any],
     try:
         log_analysis_step("Generando reporte académico estilo APA")
         
+        # Import config values
+        from config import TITULO_REPORTE, AUTOR_REPORTE, INSTITUCION, REPOSITORIO_GITHUB
+        
         generador = GeneradorReporteAPA(
-            titulo="Reporte Integral de Análisis de Rendimiento Académico",
-            autor="Sistema de Análisis de Datos Académicos",
-            institucion="Departamento de Ciencia de Datos Educativos"
+            titulo=TITULO_REPORTE,
+            autor=AUTOR_REPORTE,
+            institucion=INSTITUCION,
+            repositorio_github=REPOSITORIO_GITHUB
         )
         
         ruta_reporte = generador.generar_reporte_completo(

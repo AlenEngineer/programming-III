@@ -38,8 +38,9 @@ PALETA_COLORES = 'viridis'
 
 # Configuración de reportes
 TITULO_REPORTE = "Reporte de Análisis de Rendimiento Académico"
-AUTOR_REPORTE = "Equipo Programación III"
+AUTOR_REPORTE = "Alen Ramírez, Ariel García, Joaquín Ortis, Jasser Sánchez"
 INSTITUCION = "Universidad Tecnológica de Panamá"
+REPOSITORIO_GITHUB = "https://github.com/AlenEngineer/programming-III/tree/spanish-version"
 
 # Mapeo de columnas para análisis
 COLUMNAS_NUMERICAS = [
@@ -72,3 +73,4 @@ COLOR_PALETTE = PALETA_COLORES
 REPORT_TITLE = TITULO_REPORTE
 REPORT_AUTHOR = AUTOR_REPORTE
 INSTITUTION = INSTITUCION
+GITHUB_REPOSITORY = REPOSITORIO_GITHUB
