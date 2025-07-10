@@ -1,4 +1,4 @@
-# Sistema de Análisis de Datos Académicos - Versión Español
+# Sistema de Análisis de Datos Académicos
 
 Esta es la versión completamente traducida al español del Sistema de Análisis de Datos Académicos.
 
