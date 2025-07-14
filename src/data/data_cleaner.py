@@ -7,16 +7,14 @@ import pandas as pd
 import numpy as np
 import logging
 from typing import Dict, Any, List, Optional
-import sys
-import os
 
-# Add the parent directory to the path to import config
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from config import NUMERIC_COLUMNS, CATEGORICAL_COLUMNS, PERFORMANCE_MAPPING
-from src.utils.helpers import log_analysis_step, get_numeric_summary
+from ..config import data_config, analysis_config
+from ..core import get_logger, DataCleaningError, log_function
+from ..utils.helpers import get_numeric_summary
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
+@log_function()
 def clean_student_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     Main data cleaning function that orchestrates all cleaning operations.
@@ -26,9 +24,12 @@ def clean_student_data(df: pd.DataFrame) -> pd.DataFrame:
         
     Returns:
         Cleaned DataFrame ready for analysis
+        
+    Raises:
+        DataCleaningError: If data cleaning fails
     """
     try:
-        log_analysis_step("Starting data cleaning process")
+        logger.info("Starting data cleaning process")
         
         df_clean = df.copy()
         
@@ -50,10 +51,12 @@ def clean_student_data(df: pd.DataFrame) -> pd.DataFrame:
         logger.info(f"Data cleaning completed. Final shape: {df_clean.shape}")
         return df_clean
         
-    except Exception as e:
-        logger.error(f"Error during data cleaning: {e}")
+    except DataCleaningError:
         raise
+    except Exception as e:
+        raise DataCleaningError(f"Error during data cleaning: {str(e)}", cleaning_step="overall_cleaning") from e
 
+@log_function()
 def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
     """
     Handle missing values in the dataset using appropriate strategies.
@@ -63,9 +66,12 @@ def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
         
     Returns:
         DataFrame with missing values handled
+        
+    Raises:
+        DataCleaningError: If missing value handling fails
     """
     try:
-        log_analysis_step("Handling missing values")
+        logger.info("Handling missing values")
         
         df_clean = df.copy()
         
@@ -77,14 +83,14 @@ def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
             logger.info(f"Found missing values in columns: {missing_cols.to_dict()}")
         
         # Handle numeric columns - fill with median
-        for col in NUMERIC_COLUMNS:
+        for col in data_config.numeric_columns:
             if col in df_clean.columns and df_clean[col].isnull().sum() > 0:
                 median_value = df_clean[col].median()
                 df_clean[col].fillna(median_value, inplace=True)
                 logger.info(f"Filled {col} missing values with median: {median_value}")
         
         # Handle categorical columns - fill with mode or 'Unknown'
-        for col in CATEGORICAL_COLUMNS:
+        for col in data_config.categorical_columns:
             if col in df_clean.columns and df_clean[col].isnull().sum() > 0:
                 if df_clean[col].mode().empty:
                     fill_value = 'Unknown'
@@ -97,8 +103,7 @@ def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
         return df_clean
         
     except Exception as e:
-        logger.error(f"Error handling missing values: {e}")
-        raise
+        raise DataCleaningError(f"Error handling missing values: {str(e)}", cleaning_step="missing_values") from e
 
 def standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -175,6 +180,7 @@ def convert_data_types(df: pd.DataFrame) -> pd.DataFrame:
         logger.error(f"Error converting data types: {e}")
         raise
 
+@log_function()
 def clean_categorical_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     Clean and standardize categorical data values.
@@ -186,7 +192,7 @@ def clean_categorical_data(df: pd.DataFrame) -> pd.DataFrame:
         DataFrame with cleaned categorical data
     """
     try:
-        log_analysis_step("Cleaning categorical data")
+        logger.info("Cleaning categorical data")
         
         df_clean = df.copy()
         

@@ -3,18 +3,15 @@ import numpy as np
 import logging
 from pathlib import Path
 from typing import Union, Optional, Dict, Any
-import sys
-import os
 
-# Add the parent directory to the path to import config
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from config import DATA_FILE_PATH, CATEGORICAL_COLUMNS, NUMERIC_COLUMNS
-from src.utils.helpers import validate_dataframe_columns, log_analysis_step, setup_logging
+from ..config import data_config, app_config
+from ..core import get_logger, DataLoadError, DataValidationError, validate_dataframe, log_function
+from ..utils.helpers import validate_dataframe_columns
 
 # Set up logging
-setup_logging()
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
+@log_function()
 def load_csv_data(file_path: Optional[Union[str, Path]] = None) -> pd.DataFrame:
     """
     Load data from a CSV file with proper error handling and validation.
@@ -26,33 +23,34 @@ def load_csv_data(file_path: Optional[Union[str, Path]] = None) -> pd.DataFrame:
         Loaded DataFrame
         
     Raises:
-        FileNotFoundError: If the file doesn't exist
-        ValueError: If the file is empty or has invalid format
+        DataLoadError: If the file doesn't exist or loading fails
     """
     if file_path is None:
-        file_path = DATA_FILE_PATH
+        file_path = data_config.data_file_path
     
     file_path = Path(file_path)
     
     try:
-        log_analysis_step("Loading CSV data", f"File: {file_path}")
+        logger.info(f"Loading CSV data from: {file_path}")
         
         if not file_path.exists():
-            raise FileNotFoundError(f"File not found: {file_path}")
+            raise DataLoadError(f"File not found: {file_path}", file_path=str(file_path))
         
         # Load the CSV file
         df = pd.read_csv(file_path)
         
         if df.empty:
-            raise ValueError("The CSV file is empty")
+            raise DataLoadError("The CSV file is empty", file_path=str(file_path))
         
         logger.info(f"Successfully loaded CSV data: {len(df)} rows, {len(df.columns)} columns")
         return df
         
-    except Exception as e:
-        logger.error(f"Error loading CSV file {file_path}: {e}")
+    except DataLoadError:
         raise
+    except Exception as e:
+        raise DataLoadError(f"Error loading CSV file {file_path}: {str(e)}", file_path=str(file_path)) from e
 
+@log_function()
 def load_excel_data(file_path: Union[str, Path], sheet_name: Union[str, int] = 0) -> pd.DataFrame:
     """
     Load data from an Excel file with proper error handling.
@@ -65,30 +63,31 @@ def load_excel_data(file_path: Union[str, Path], sheet_name: Union[str, int] = 0
         Loaded DataFrame
         
     Raises:
-        FileNotFoundError: If the file doesn't exist
-        ValueError: If the file is empty or has invalid format
+        DataLoadError: If the file doesn't exist or loading fails
     """
     file_path = Path(file_path)
     
     try:
-        log_analysis_step("Loading Excel data", f"File: {file_path}, Sheet: {sheet_name}")
+        logger.info(f"Loading Excel data from: {file_path}, Sheet: {sheet_name}")
         
         if not file_path.exists():
-            raise FileNotFoundError(f"File not found: {file_path}")
+            raise DataLoadError(f"File not found: {file_path}", file_path=str(file_path))
         
         # Load the Excel file
         df = pd.read_excel(file_path, sheet_name=sheet_name)
         
         if df.empty:
-            raise ValueError("The Excel file is empty")
+            raise DataLoadError("The Excel file is empty", file_path=str(file_path))
         
         logger.info(f"Successfully loaded Excel data: {len(df)} rows, {len(df.columns)} columns")
         return df
         
-    except Exception as e:
-        logger.error(f"Error loading Excel file {file_path}: {e}")
+    except DataLoadError:
         raise
+    except Exception as e:
+        raise DataLoadError(f"Error loading Excel file {file_path}: {str(e)}", file_path=str(file_path)) from e
 
+@log_function()
 def validate_data_structure(df: pd.DataFrame) -> bool:
     """
     Validate that the loaded data has the expected structure for academic analysis.
@@ -98,36 +97,39 @@ def validate_data_structure(df: pd.DataFrame) -> bool:
         
     Returns:
         True if data structure is valid, False otherwise
+        
+    Raises:
+        DataValidationError: If validation fails
     """
     try:
-        log_analysis_step("Validating data structure")
+        logger.info("Validating data structure")
         
-        # Check for required columns
-        all_required_columns = CATEGORICAL_COLUMNS + NUMERIC_COLUMNS
-        if not validate_dataframe_columns(df, all_required_columns):
-            return False
+        # Use the new validation function
+        is_valid, validation_results = validate_dataframe(
+            df,
+            required_columns=data_config.numeric_columns + data_config.categorical_columns,
+            min_rows=data_config.min_rows,
+            max_missing_percentage=data_config.max_missing_percentage
+        )
         
-        # Check data types
-        for col in NUMERIC_COLUMNS:
-            if col in df.columns and not pd.api.types.is_numeric_dtype(df[col]):
-                logger.warning(f"Column {col} is not numeric, will attempt conversion")
+        if not is_valid:
+            error_messages = "; ".join(validation_results['errors'])
+            raise DataValidationError(f"Data structure validation failed: {error_messages}")
         
-        # Check for completely empty columns
-        empty_columns = df.columns[df.isnull().all()].tolist()
-        if empty_columns:
-            logger.warning(f"Found completely empty columns: {empty_columns}")
+        # Log warnings if any
+        if validation_results['warnings']:
+            for warning in validation_results['warnings']:
+                logger.warning(warning)
         
-        # Check minimum number of rows
-        if len(df) < 10:
-            logger.warning("Dataset has very few rows, analysis may not be meaningful")
-        
-        logger.info("Data structure validation completed successfully")
+        logger.info("Data structure validation passed")
         return True
         
+    except DataValidationError:
+        raise
     except Exception as e:
-        logger.error(f"Error during data validation: {e}")
-        return False
+        raise DataValidationError(f"Error during data structure validation: {str(e)}") from e
 
+@log_function()
 def get_data_info(df: pd.DataFrame) -> Dict[str, Any]:
     """
     Get comprehensive information about the loaded dataset.
@@ -139,7 +141,7 @@ def get_data_info(df: pd.DataFrame) -> Dict[str, Any]:
         Dictionary containing dataset information
     """
     try:
-        log_analysis_step("Generating data information summary")
+        logger.info("Generating data information summary")
         
         info = {
             'shape': df.shape,
@@ -147,8 +149,8 @@ def get_data_info(df: pd.DataFrame) -> Dict[str, Any]:
             'data_types': df.dtypes.to_dict(),
             'missing_values': df.isnull().sum().to_dict(),
             'memory_usage': df.memory_usage(deep=True).sum(),
-            'categorical_columns': [col for col in df.columns if col in CATEGORICAL_COLUMNS],
-            'numeric_columns': [col for col in df.columns if col in NUMERIC_COLUMNS],
+            'categorical_columns': [col for col in df.columns if col in data_config.categorical_columns],
+            'numeric_columns': [col for col in df.columns if col in data_config.numeric_columns],
         }
         
         # Add unique value counts for categorical columns
@@ -177,6 +179,7 @@ def get_data_info(df: pd.DataFrame) -> Dict[str, Any]:
         logger.error(f"Error generating data info: {e}")
         return {}
 
+@log_function()
 def load_and_validate_data(file_path: Optional[Union[str, Path]] = None) -> pd.DataFrame:
     """
     Complete data loading pipeline with validation.
@@ -188,12 +191,13 @@ def load_and_validate_data(file_path: Optional[Union[str, Path]] = None) -> pd.D
         Validated DataFrame ready for analysis
         
     Raises:
-        ValueError: If data validation fails
+        DataLoadError: If data loading fails
+        DataValidationError: If data validation fails
     """
     try:
         # Determine file type and load accordingly
         if file_path is None:
-            file_path = DATA_FILE_PATH
+            file_path = data_config.data_file_path
         
         file_path = Path(file_path)
         
@@ -202,11 +206,10 @@ def load_and_validate_data(file_path: Optional[Union[str, Path]] = None) -> pd.D
         elif file_path.suffix.lower() in ['.xlsx', '.xls']:
             df = load_excel_data(file_path)
         else:
-            raise ValueError(f"Unsupported file format: {file_path.suffix}")
+            raise DataLoadError(f"Unsupported file format: {file_path.suffix}", file_path=str(file_path))
         
         # Validate the loaded data
-        if not validate_data_structure(df):
-            raise ValueError("Data validation failed")
+        validate_data_structure(df)
         
         # Get and log data information
         data_info = get_data_info(df)
@@ -214,9 +217,10 @@ def load_and_validate_data(file_path: Optional[Union[str, Path]] = None) -> pd.D
         
         return df
         
-    except Exception as e:
-        logger.error(f"Error in data loading pipeline: {e}")
+    except (DataLoadError, DataValidationError):
         raise
+    except Exception as e:
+        raise DataLoadError(f"Error in data loading pipeline: {str(e)}", file_path=str(file_path)) from e
 
 if __name__ == "__main__":
     # Test the data loader
