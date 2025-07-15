@@ -1,6 +1,6 @@
 """
-Utility functions for the Academic Data Analysis System
-Common helper functions used across different modules.
+Funciones utilitarias para el Sistema de Análisis de Datos Académicos
+Funciones auxiliares comunes usadas en diferentes módulos.
 """
 
 import os
@@ -12,27 +12,27 @@ import numpy as np
 
 def format_percentage(value: float, decimals: int = 2) -> str:
     """
-    Format a decimal value as a percentage string.
+    Formatear un valor decimal como una cadena de porcentaje.
     
     Args:
-        value: Decimal value to convert to percentage
-        decimals: Number of decimal places to show
+        value: Valor decimal a convertir a porcentaje
+        decimals: Número de decimales a mostrar
         
     Returns:
-        Formatted percentage string
+        Cadena de porcentaje formateada
     """
     return f"{value * 100:.{decimals}f}%"
 
 def safe_divide(numerator: Union[int, float], denominator: Union[int, float]) -> float:
     """
-    Safely divide two numbers, returning 0 if denominator is 0.
+    Dividir dos números de forma segura, devolviendo 0 si el denominador es 0.
     
     Args:
-        numerator: The dividend
-        denominator: The divisor
+        numerator: El dividendo
+        denominator: El divisor
         
     Returns:
-        Division result or 0 if denominator is 0
+        Resultado de la división o 0 si el denominador es 0
     """
     if denominator == 0:
         return 0.0
@@ -40,27 +40,27 @@ def safe_divide(numerator: Union[int, float], denominator: Union[int, float]) ->
 
 def create_output_directory(directory_path: Union[str, Path]) -> bool:
     """
-    Create a directory if it doesn't exist.
+    Crear un directorio si no existe.
     
     Args:
-        directory_path: Path to the directory to create
+        directory_path: Ruta al directorio a crear
         
     Returns:
-        True if directory was created or already exists, False otherwise
+        True si el directorio fue creado o ya existe, False de lo contrario
     """
     try:
         Path(directory_path).mkdir(parents=True, exist_ok=True)
         return True
     except Exception as e:
-        logging.error(f"Failed to create directory {directory_path}: {e}")
+        logging.error(f"Error al crear directorio {directory_path}: {e}")
         return False
 
 def setup_logging(log_level: str = "INFO") -> None:
     """
-    Set up logging configuration for the application.
+    Configurar la configuración de logging para la aplicación.
     
     Args:
-        log_level: Logging level (DEBUG, INFO, WARNING, ERROR)
+        log_level: Nivel de logging (DEBUG, INFO, WARNING, ERROR)
     """
     logging.basicConfig(
         level=getattr(logging, log_level.upper()),
@@ -73,47 +73,47 @@ def setup_logging(log_level: str = "INFO") -> None:
 
 def log_analysis_step(step_name: str, details: Optional[str] = None) -> None:
     """
-    Log an analysis step with optional details.
+    Registrar un paso de análisis con detalles opcionales.
     
     Args:
-        step_name: Name of the analysis step
-        details: Additional details about the step
+        step_name: Nombre del paso de análisis
+        details: Detalles adicionales sobre el paso
     """
     logger = logging.getLogger(__name__)
-    message = f"Analysis Step: {step_name}"
+    message = f"Paso de Análisis: {step_name}"
     if details:
         message += f" - {details}"
     logger.info(message)
 
 def validate_dataframe_columns(df: pd.DataFrame, required_columns: list) -> bool:
     """
-    Validate that a DataFrame contains all required columns.
+    Validar que un DataFrame contenga todas las columnas requeridas.
     
     Args:
-        df: DataFrame to validate
-        required_columns: List of column names that must be present
+        df: DataFrame a validar
+        required_columns: Lista de nombres de columnas que deben estar presentes
         
     Returns:
-        True if all required columns are present, False otherwise
+        True si todas las columnas requeridas están presentes, False de lo contrario
     """
     missing_columns = set(required_columns) - set(df.columns)
     if missing_columns:
-        logging.error(f"Missing required columns: {missing_columns}")
+        logging.error(f"Faltan columnas requeridas: {missing_columns}")
         return False
     return True
 
 def get_numeric_summary(series: pd.Series) -> dict:
     """
-    Get a comprehensive numeric summary of a pandas Series.
+    Obtener un resumen numérico integral de una Serie de pandas.
     
     Args:
-        series: Pandas Series with numeric data
+        series: Serie de Pandas con datos numéricos
         
     Returns:
-        Dictionary with statistical summary
+        Diccionario con resumen estadístico
     """
     if not pd.api.types.is_numeric_dtype(series):
-        raise ValueError("Series must contain numeric data")
+        raise ValueError("La serie debe contener datos numéricos")
     
     return {
         'count': len(series),
@@ -128,13 +128,13 @@ def get_numeric_summary(series: pd.Series) -> dict:
 
 def clean_column_names(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Clean and standardize column names in a DataFrame.
+    Limpiar y estandarizar nombres de columnas en un DataFrame.
     
     Args:
-        df: DataFrame with potentially messy column names
+        df: DataFrame con nombres de columnas potencialmente desordenados
         
     Returns:
-        DataFrame with cleaned column names
+        DataFrame con nombres de columnas limpiados
     """
     df_copy = df.copy()
     df_copy.columns = df_copy.columns.str.strip().str.lower().str.replace(' ', '_')
@@ -142,18 +142,18 @@ def clean_column_names(df: pd.DataFrame) -> pd.DataFrame:
 
 def export_to_csv(df: pd.DataFrame, filename: str, output_dir: Union[str, Path]) -> str:
     """
-    Export a DataFrame to CSV file in the specified directory.
+    Exportar un DataFrame a archivo CSV en el directorio especificado.
     
     Args:
-        df: DataFrame to export
-        filename: Name of the output file (without extension)
-        output_dir: Directory to save the file
+        df: DataFrame a exportar
+        filename: Nombre del archivo de salida (sin extensión)
+        output_dir: Directorio donde guardar el archivo
         
     Returns:
-        Full path to the exported file
+        Ruta completa al archivo exportado
     """
     output_path = Path(output_dir) / f"{filename}.csv"
     create_output_directory(output_dir)
     df.to_csv(output_path, index=False)
-    logging.info(f"Data exported to: {output_path}")
+    logging.info(f"Datos exportados a: {output_path}")
     return str(output_path)

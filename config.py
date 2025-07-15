@@ -1,47 +1,47 @@
 """
-Configuration file for the Academic Data Analysis System
-Contains all constants and configuration parameters used across the system.
+Archivo de configuración para el Sistema de Análisis de Datos Académicos
+Contiene todas las constantes y parámetros de configuración utilizados en el sistema.
 """
 
 import os
 from pathlib import Path
 
-# File paths
+# Rutas de archivos
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"
 OUTPUT_DIR = BASE_DIR / "output"
 CHARTS_DIR = OUTPUT_DIR / "charts"
 REPORTS_DIR = OUTPUT_DIR / "reports"
 
-# Data file configuration
+# Configuración de archivo de datos
 DEFAULT_CSV_FILE = "xAPI-Edu-Data.csv"
 DATA_FILE_PATH = BASE_DIR / DEFAULT_CSV_FILE
 
-# Academic performance thresholds
+# Umbrales de rendimiento académico
 MINIMUM_PASSING_GRADE = 60
 EXCELLENT_GRADE = 85
-RISK_ABSENCE_THRESHOLD = 7  # More than 7 days absent = at risk
-LOW_PARTICIPATION_THRESHOLD = 20  # Below 20 interactions = low participation
+RISK_ABSENCE_THRESHOLD = 7  # Más de 7 días de ausencia = en riesgo
+LOW_PARTICIPATION_THRESHOLD = 20  # Menos de 20 interacciones = baja participación
 
-# Performance categories mapping
+# Mapeo de categorías de rendimiento
 PERFORMANCE_MAPPING = {
     'L': 'Low',
     'M': 'Medium', 
     'H': 'High'
 }
 
-# Chart styling configuration
+# Configuración de estilo de gráficos
 CHART_STYLE = 'whitegrid'
 FIGURE_SIZE = (12, 8)
 DPI = 300
 COLOR_PALETTE = 'viridis'
 
-# Report configuration
+# Configuración de reportes
 REPORT_TITLE = "Academic Performance Analysis Report"
 REPORT_AUTHOR = "Programming III Team"
 INSTITUTION = "Universidad Tecnológica de Panamá"
 
-# Column mappings for analysis
+# Mapeo de columnas para análisis
 NUMERIC_COLUMNS = [
     'raisedhands', 'VisITedResources', 'AnnouncementsView', 'Discussion'
 ]
@@ -52,7 +52,7 @@ CATEGORICAL_COLUMNS = [
     'ParentschoolSatisfaction', 'StudentAbsenceDays', 'Class'
 ]
 
-# Ensure output directories exist
+# Asegurar que los directorios de salida existen
 OUTPUT_DIR.mkdir(exist_ok=True)
 CHARTS_DIR.mkdir(exist_ok=True)
 REPORTS_DIR.mkdir(exist_ok=True)
