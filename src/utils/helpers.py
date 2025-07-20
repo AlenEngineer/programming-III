@@ -102,29 +102,7 @@ def validate_dataframe_columns(df: pd.DataFrame, required_columns: list) -> bool
         return False
     return True
 
-def get_numeric_summary(series: pd.Series) -> dict:
-    """
-    Obtener un resumen numérico integral de una Serie de pandas.
-    
-    Args:
-        series: Serie de Pandas con datos numéricos
-        
-    Returns:
-        Diccionario con resumen estadístico
-    """
-    if not pd.api.types.is_numeric_dtype(series):
-        raise ValueError("La serie debe contener datos numéricos")
-    
-    return {
-        'count': len(series),
-        'mean': float(series.mean()),
-        'median': float(series.median()),
-        'std': float(series.std()),
-        'min': float(series.min()),
-        'max': float(series.max()),
-        'q25': float(series.quantile(0.25)),
-        'q75': float(series.quantile(0.75))
-    }
+
 
 def clean_column_names(df: pd.DataFrame) -> pd.DataFrame:
     """

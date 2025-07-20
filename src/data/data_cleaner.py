@@ -361,10 +361,13 @@ def get_data_quality_report(df: pd.DataFrame) -> Dict[str, Any]:
         # Agregar análisis de columnas numéricas
         numeric_analysis = {}
         for col in df.select_dtypes(include=[np.number]).columns:
-            # Assuming get_numeric_summary is no longer available or needs to be re-imported
-            # For now, we'll just include a placeholder or remove if not used
-            # numeric_analysis[col] = get_numeric_summary(df[col]) 
-            pass # Placeholder for now
+            numeric_analysis[col] = {
+                'count': len(df[col].dropna()),
+                'mean': float(df[col].mean()),
+                'std': float(df[col].std()),
+                'min': float(df[col].min()),
+                'max': float(df[col].max())
+            }
         report['numeric_analysis'] = numeric_analysis
         
         logger.info("Reporte de calidad de datos generado exitosamente")
