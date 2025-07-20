@@ -1,7 +1,7 @@
 [project]
 name = "programming-iii"
 version = "0.1.0"
-description = "Add your description here"
+description = "Sistema de Análisis de Datos Académicos para la Universidad Tecnológica de Panamá"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

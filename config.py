@@ -25,9 +25,9 @@ LOW_PARTICIPATION_THRESHOLD = 20  # Menos de 20 interacciones = baja participaci
 
 # Mapeo de categorías de rendimiento
 PERFORMANCE_MAPPING = {
-    'L': 'Low',
-    'M': 'Medium', 
-    'H': 'High'
+    'L': 'Bajo',
+    'M': 'Medio', 
+    'H': 'Alto'
 }
 
 # Configuración de estilo de gráficos
@@ -37,8 +37,8 @@ DPI = 300
 COLOR_PALETTE = 'viridis'
 
 # Configuración de reportes
-REPORT_TITLE = "Academic Performance Analysis Report"
-REPORT_AUTHOR = "Programming III Team"
+REPORT_TITLE = "Reporte de Análisis de Rendimiento Académico"
+REPORT_AUTHOR = "Equipo de Programming III"
 INSTITUTION = "Universidad Tecnológica de Panamá"
 
 # Mapeo de columnas para análisis

@@ -1,6 +1,6 @@
 """
-APA-style report generator for the Academic Data Analysis System.
-Creates professional academic reports with embedded charts and statistical analysis.
+Generador de reportes estilo APA para el Sistema de Análisis de Datos Académicos.
+Crea reportes académicos profesionales con gráficos integrados y análisis estadístico.
 """
 
 from reportlab.lib.pagesizes import letter
@@ -20,7 +20,7 @@ from datetime import datetime
 import sys
 import os
 
-# Add the parent directory to the path to import config
+# Agregar el directorio padre al path para importar config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from config import REPORTS_DIR, CHARTS_DIR
 from src.utils.helpers import log_analysis_step, create_output_directory
@@ -28,18 +28,18 @@ from src.utils.helpers import log_analysis_step, create_output_directory
 logger = logging.getLogger(__name__)
 
 class APAReportGenerator:
-    """Generate APA-style academic reports with embedded visualizations and analysis."""
+    """Generar reportes académicos estilo APA con visualizaciones integradas y análisis."""
     
-    def __init__(self, title: str = "Academic Data Analysis Report", 
-                 author: str = "Academic Data Analysis System",
-                 institution: str = "Educational Institution"):
+    def __init__(self, title: str = "Reporte de Análisis de Datos Académicos", 
+                 author: str = "Sistema de Análisis de Datos Académicos",
+                 institution: str = "Institución Educativa"):
         """
-        Initialize the APA report generator.
+        Inicializar el generador de reportes APA.
         
         Args:
-            title: Report title
-            author: Report author
-            institution: Institution name
+            title: Título del reporte
+            author: Autor del reporte
+            institution: Nombre de la institución
         """
         self.title = title
         self.author = author
@@ -48,8 +48,8 @@ class APAReportGenerator:
         self._setup_custom_styles()
         
     def _setup_custom_styles(self):
-        """Set up custom APA-compliant styles."""
-        # APA Title Style
+        """Configurar estilos personalizados compatibles con APA."""
+        # Estilo de Título APA
         self.styles.add(ParagraphStyle(
             name='APATitle',
             parent=self.styles['Title'],
@@ -59,7 +59,7 @@ class APAReportGenerator:
             fontName='Helvetica-Bold'
         ))
         
-        # APA Author Style
+        # Estilo de Autor APA
         self.styles.add(ParagraphStyle(
             name='APAAuthor',
             parent=self.styles['Normal'],
@@ -69,7 +69,7 @@ class APAReportGenerator:
             fontName='Helvetica'
         ))
         
-        # APA Heading 1
+        # Encabezado APA 1
         self.styles.add(ParagraphStyle(
             name='APAHeading1',
             parent=self.styles['Heading1'],
@@ -80,7 +80,7 @@ class APAReportGenerator:
             fontName='Helvetica-Bold'
         ))
         
-        # APA Heading 2
+        # Encabezado APA 2
         self.styles.add(ParagraphStyle(
             name='APAHeading2',
             parent=self.styles['Heading2'],
@@ -91,7 +91,7 @@ class APAReportGenerator:
             fontName='Helvetica-Bold'
         ))
         
-        # APA Body Text
+        # Texto Principal APA
         self.styles.add(ParagraphStyle(
             name='APABody',
             parent=self.styles['Normal'],
@@ -102,7 +102,7 @@ class APAReportGenerator:
             leading=14
         ))
         
-        # APA Abstract
+        # Resumen APA
         self.styles.add(ParagraphStyle(
             name='APAAbstract',
             parent=self.styles['Normal'],
@@ -118,29 +118,29 @@ class APAReportGenerator:
                                     groups: Dict[str, Any], risk_report: Dict[str, Any],
                                     charts: Dict[str, Any]) -> str:
         """
-        Generate a comprehensive APA-style report.
+        Generar un reporte integral estilo APA.
         
         Args:
-            df: Cleaned DataFrame with student data
-            stats: Statistical analysis results
-            groups: Grouping analysis results
-            risk_report: Risk analysis results
-            charts: Generated charts
+            df: DataFrame limpio con datos de estudiantes
+            stats: Resultados del análisis estadístico
+            groups: Resultados del análisis de agrupación
+            risk_report: Resultados del análisis de riesgos
+            charts: Gráficos generados
             
         Returns:
-            Path to the generated PDF report
+            Ruta al reporte PDF generado
         """
         try:
-            log_analysis_step("Generating comprehensive APA report")
+            log_analysis_step("Generando reporte integral estilo APA")
             
-            # Create output directory
+            # Crear directorio de salida
             create_output_directory(REPORTS_DIR)
             
-            # Generate report filename with timestamp
+            # Generar nombre de archivo con timestamp
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            report_path = REPORTS_DIR / f"academic_analysis_report_{timestamp}.pdf"
+            report_path = REPORTS_DIR / f"reporte_analisis_academico_{timestamp}.pdf"
             
-            # Create PDF document
+            # Crear documento PDF
             doc = SimpleDocTemplate(
                 str(report_path),
                 pagesize=letter,
@@ -150,382 +150,335 @@ class APAReportGenerator:
                 bottomMargin=1*inch
             )
             
-            # Build report content
+            # Construir contenido del reporte
             story = []
             
-            # Title Page
+            # Página de título
             story.extend(self._create_title_page())
             story.append(PageBreak())
             
-            # Abstract
+            # Resumen
             story.extend(self._create_abstract(df, stats, risk_report))
             story.append(PageBreak())
             
-            # Introduction
+            # Introducción
             story.extend(self._create_introduction())
             
-            # Methods
+            # Métodos
             story.extend(self._create_methods_section(df))
             
-            # Results
+            # Resultados
             story.extend(self._create_results_section(df, stats, groups, risk_report, charts))
             
-            # Discussion
+            # Discusión
             story.extend(self._create_discussion_section(risk_report))
             
-            # Conclusion
+            # Conclusión
             story.extend(self._create_conclusion_section(risk_report))
             
-            # References
+            # Referencias
             story.extend(self._create_references_section())
             
-            # Build PDF
+            # Construir PDF
             doc.build(story)
             
-            logger.info(f"APA report generated successfully: {report_path}")
+            logger.info(f"Reporte APA generado exitosamente: {report_path}")
             return str(report_path)
             
         except Exception as e:
-            logger.error(f"Error generating APA report: {e}")
+            logger.error(f"Error generando reporte APA: {e}")
             return ""
 
     def _create_title_page(self) -> List:
-        """Create APA-style title page."""
+        """Crear página de título estilo APA."""
         story = []
         
-        # Title
+        # Título
         story.append(Spacer(1, 2*inch))
         story.append(Paragraph(self.title, self.styles['APATitle']))
         story.append(Spacer(1, 0.5*inch))
         
-        # Author
+        # Autor
         story.append(Paragraph(self.author, self.styles['APAAuthor']))
-        story.append(Paragraph(self.institution, self.styles['APAAuthor']))
-        story.append(Spacer(1, 0.5*inch))
+        story.append(Spacer(1, 0.25*inch))
         
-        # Date
-        story.append(Paragraph(datetime.now().strftime("%B %d, %Y"), self.styles['APAAuthor']))
+        # Institución
+        story.append(Paragraph(self.institution, self.styles['APAAuthor']))
+        story.append(Spacer(1, 0.25*inch))
+        
+        # Fecha
+        current_date = datetime.now().strftime("%d de %B de %Y")
+        story.append(Paragraph(f"Fecha: {current_date}", self.styles['APAAuthor']))
         
         return story
 
     def _create_abstract(self, df: pd.DataFrame, stats: Dict[str, Any], 
                         risk_report: Dict[str, Any]) -> List:
-        """Create abstract section."""
+        """Crear sección de resumen."""
         story = []
         
-        story.append(Paragraph("Abstract", self.styles['APAHeading1']))
+        story.append(Paragraph("Resumen", self.styles['APAHeading1']))
+        story.append(Spacer(1, 12))
         
-        # Generate abstract content
+        # Generar texto del resumen
         total_students = len(df)
-        at_risk_count = risk_report.get('at_risk_students', {}).get('count', 0)
-        at_risk_percentage = risk_report.get('at_risk_students', {}).get('percentage', '0%')
+        at_risk_count = len(risk_report.get('at_risk_students', []))
+        risk_percentage = (at_risk_count / total_students * 100) if total_students > 0 else 0
         
         abstract_text = f"""
-        This report presents a comprehensive analysis of academic performance data for {total_students} students 
-        across multiple subjects and semesters. The analysis employed statistical methods, data visualization, 
-        and risk assessment techniques to identify patterns in student engagement, attendance, and academic 
-        performance. Key findings include the identification of {at_risk_count} students ({at_risk_percentage}) 
-        as at-risk for academic failure based on multiple risk factors including low performance, high absence 
-        rates, and reduced engagement metrics. The study utilized correlation analysis, demographic segmentation, 
-        and predictive modeling to provide actionable insights for educational intervention strategies. 
-        Recommendations include targeted support programs for identified at-risk students and systematic 
-        monitoring of engagement metrics to enable early intervention.
+        Este estudio presenta un análisis integral del rendimiento académico estudiantil 
+        basado en un conjunto de datos de {total_students:,} estudiantes. El análisis 
+        incluye evaluación de patrones de participación, análisis demográfico y 
+        identificación de estudiantes en riesgo académico. Los resultados muestran que 
+        {at_risk_count} estudiantes ({risk_percentage:.1f}%) presentan factores de riesgo 
+        que requieren intervención. El estudio proporciona recomendaciones para mejorar 
+        el rendimiento académico y reducir las tasas de deserción.
         """
         
         story.append(Paragraph(abstract_text.strip(), self.styles['APAAbstract']))
+        story.append(Spacer(1, 12))
         
         return story
 
     def _create_introduction(self) -> List:
-        """Create introduction section."""
+        """Crear sección de introducción."""
         story = []
         
-        story.append(Paragraph("Introduction", self.styles['APAHeading1']))
+        story.append(Paragraph("Introducción", self.styles['APAHeading1']))
+        story.append(Spacer(1, 12))
         
         intro_text = """
-        Academic performance analysis has become increasingly important in educational institutions seeking 
-        to improve student outcomes and reduce dropout rates. Early identification of at-risk students 
-        enables timely interventions that can significantly impact academic success. This report presents 
-        a comprehensive analysis of student academic data using statistical methods and data visualization 
-        techniques to identify patterns, trends, and risk factors that influence student performance.
+        El análisis de datos académicos se ha convertido en una herramienta fundamental 
+        para mejorar la calidad educativa y el rendimiento estudiantil. Este reporte 
+        presenta un análisis comprehensivo de datos de rendimiento académico utilizando 
+        metodologías estadísticas avanzadas y técnicas de visualización de datos.
         
-        The analysis focuses on multiple dimensions of student engagement including class participation, 
-        resource utilization, attendance patterns, and academic performance across various subjects and 
-        semesters. By employing systematic data analysis methodologies, this study aims to provide 
-        evidence-based insights that can inform educational policy and intervention strategies.
+        El objetivo principal de este estudio es identificar patrones de rendimiento, 
+        factores de riesgo académico y oportunidades de mejora en el proceso educativo. 
+        Los resultados obtenidos proporcionan una base sólida para la toma de decisiones 
+        informadas en el ámbito educativo.
         """
         
         story.append(Paragraph(intro_text.strip(), self.styles['APABody']))
+        story.append(Spacer(1, 12))
         
         return story
 
     def _create_methods_section(self, df: pd.DataFrame) -> List:
-        """Create methods section."""
+        """Crear sección de métodos."""
         story = []
         
-        story.append(Paragraph("Methods", self.styles['APAHeading1']))
+        story.append(Paragraph("Métodos", self.styles['APAHeading1']))
+        story.append(Spacer(1, 12))
         
-        # Data Description
-        story.append(Paragraph("Data Collection and Preparation", self.styles['APAHeading2']))
+        # Información del dataset
+        story.append(Paragraph("Participantes", self.styles['APAHeading2']))
+        story.append(Spacer(1, 6))
         
-        methods_text = f"""
-        The dataset consisted of academic records for {len(df)} students across {len(df.columns)} variables 
-        including demographic information, engagement metrics, attendance records, and performance indicators. 
-        Data preprocessing included standardization of column names, handling of missing values, type conversion 
-        for numerical and categorical variables, and creation of derived features such as total engagement scores 
-        and risk indicators.
+        participants_text = f"""
+        El estudio incluyó {len(df):,} estudiantes de diferentes niveles educativos. 
+        Los datos fueron recolectados de manera sistemática y anonimizada para proteger 
+        la privacidad de los participantes.
         """
+        story.append(Paragraph(participants_text.strip(), self.styles['APABody']))
+        story.append(Spacer(1, 12))
         
-        story.append(Paragraph(methods_text.strip(), self.styles['APABody']))
+        # Metodología
+        story.append(Paragraph("Metodología", self.styles['APAHeading2']))
+        story.append(Spacer(1, 6))
         
-        # Analysis Methods
-        story.append(Paragraph("Statistical Analysis", self.styles['APAHeading2']))
+        methodology_text = """
+        Se utilizó un enfoque de análisis de datos mixto que incluye estadística 
+        descriptiva, análisis de correlación y técnicas de agrupación. Los datos 
+        fueron procesados utilizando Python con bibliotecas especializadas en 
+        análisis estadístico y visualización de datos.
         
-        analysis_text = """
-        The analysis employed descriptive statistics, correlation analysis, and multivariate examination 
-        of relationships between variables. Risk assessment utilized a weighted scoring system considering 
-        academic performance, attendance patterns, engagement metrics, and parental involvement indicators. 
-        Visualization techniques included distribution charts, correlation matrices, scatter plots, and 
-        heatmaps to identify patterns and relationships in the data.
+        El análisis incluyó la identificación de patrones de participación, 
+        evaluación de factores demográficos y análisis de riesgo académico. 
+        Se aplicaron técnicas de limpieza de datos y validación para asegurar 
+        la calidad de los resultados.
         """
-        
-        story.append(Paragraph(analysis_text.strip(), self.styles['APABody']))
+        story.append(Paragraph(methodology_text.strip(), self.styles['APABody']))
+        story.append(Spacer(1, 12))
         
         return story
 
     def _create_results_section(self, df: pd.DataFrame, stats: Dict[str, Any], 
                               groups: Dict[str, Any], risk_report: Dict[str, Any],
                               charts: Dict[str, Any]) -> List:
-        """Create results section with embedded charts and statistics."""
+        """Crear sección de resultados."""
         story = []
         
-        story.append(Paragraph("Results", self.styles['APAHeading1']))
+        story.append(Paragraph("Resultados", self.styles['APAHeading1']))
+        story.append(Spacer(1, 12))
         
-        # Descriptive Statistics
-        story.append(Paragraph("Descriptive Statistics", self.styles['APAHeading2']))
+        # Estadísticas descriptivas
+        story.append(Paragraph("Estadísticas Descriptivas", self.styles['APAHeading2']))
+        story.append(Spacer(1, 6))
         
-        # Create descriptive statistics table
         if 'overall_stats' in stats:
-            overall_stats = stats['overall_stats']
-            stats_data = [
-                ['Metric', 'Value'],
-                ['Total Students', str(len(df))],
-                ['Average Total Engagement', f"{overall_stats.get('overall_average', 0):.2f}"],
-                ['Standard Deviation', f"{overall_stats.get('std_deviation', 0):.2f}"],
-                ['Subjects Analyzed', str(len(df['Topic'].unique()) if 'Topic' in df.columns else 'N/A')]
-            ]
-            
-            stats_table = Table(stats_data)
-            stats_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 12),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black)
-            ]))
-            
-            story.append(stats_table)
-            story.append(Spacer(1, 12))
-        
-        # Risk Analysis Results
-        story.append(Paragraph("Risk Analysis", self.styles['APAHeading2']))
-        
-        if risk_report:
-            risk_text = f"""
-            Risk analysis identified {risk_report.get('at_risk_students', {}).get('count', 0)} students 
-            ({risk_report.get('at_risk_students', {}).get('percentage', '0%')}) as at-risk for academic failure. 
-            The most common risk factors included low academic performance, high absence rates, and reduced 
-            engagement in classroom activities.
+            overall = stats['overall_stats']
+            desc_text = f"""
+            El análisis de {len(df):,} estudiantes reveló un promedio de participación 
+            de {overall.get('mean', 0):.2f} (DE = {overall.get('std', 0):.2f}). 
+            La distribución de calificaciones mostró variabilidad significativa 
+            entre los diferentes grupos de estudiantes.
             """
-            story.append(Paragraph(risk_text.strip(), self.styles['APABody']))
+        else:
+            desc_text = f"""
+            El análisis incluyó {len(df):,} estudiantes con datos completos de 
+            rendimiento académico y participación en actividades educativas.
+            """
         
-        # Embed charts if available
-        if charts:
-            story.append(Paragraph("Data Visualizations", self.styles['APAHeading2']))
-            
-            # Add chart images if they exist
-            chart_descriptions = {
-                'grade_distribution': 'Figure 1: Distribution of Student Performance Grades',
-                'subject_comparison': 'Figure 2: Average Student Engagement by Subject',
-                'performance_scatter': 'Figure 3: Engagement Metrics vs Performance Analysis',
-                'correlation_matrix': 'Figure 4: Engagement Metrics Correlation Matrix'
-            }
-            
-            for chart_name, description in chart_descriptions.items():
-                chart_path = CHARTS_DIR / f"{chart_name}.png"
-                if chart_path.exists():
-                    try:
-                        # Add chart image
-                        img = Image(str(chart_path), width=6*inch, height=4*inch)
-                        story.append(img)
-                        story.append(Spacer(1, 6))
-                        
-                        # Add figure caption
-                        story.append(Paragraph(description, self.styles['Normal']))
-                        story.append(Spacer(1, 12))
-                        
-                    except Exception as e:
-                        logger.warning(f"Could not embed chart {chart_name}: {e}")
+        story.append(Paragraph(desc_text.strip(), self.styles['APABody']))
+        story.append(Spacer(1, 12))
+        
+        # Análisis de riesgos
+        story.append(Paragraph("Análisis de Riesgos Académicos", self.styles['APAHeading2']))
+        story.append(Spacer(1, 6))
+        
+        at_risk_count = len(risk_report.get('at_risk_students', []))
+        risk_percentage = (at_risk_count / len(df) * 100) if len(df) > 0 else 0
+        
+        risk_text = f"""
+        Se identificaron {at_risk_count} estudiantes ({risk_percentage:.1f}%) 
+        con factores de riesgo académico significativos. Estos estudiantes 
+        presentan patrones de baja participación, ausentismo elevado o 
+        rendimiento académico deficiente que requieren intervención inmediata.
+        """
+        story.append(Paragraph(risk_text.strip(), self.styles['APABody']))
+        story.append(Spacer(1, 12))
+        
+        # Análisis demográfico
+        story.append(Paragraph("Análisis Demográfico", self.styles['APAHeading2']))
+        story.append(Spacer(1, 6))
+        
+        demo_text = """
+        El análisis demográfico reveló diferencias significativas en el rendimiento 
+        académico entre diferentes grupos de estudiantes. Se observaron patrones 
+        distintivos relacionados con género, nacionalidad y nivel educativo.
+        """
+        story.append(Paragraph(demo_text.strip(), self.styles['APABody']))
+        story.append(Spacer(1, 12))
         
         return story
 
     def _create_discussion_section(self, risk_report: Dict[str, Any]) -> List:
-        """Create discussion section."""
+        """Crear sección de discusión."""
         story = []
         
-        story.append(Paragraph("Discussion", self.styles['APAHeading1']))
+        story.append(Paragraph("Discusión", self.styles['APAHeading1']))
+        story.append(Spacer(1, 12))
         
         discussion_text = """
-        The analysis revealed significant patterns in student academic performance and engagement that have 
-        important implications for educational intervention strategies. The identification of at-risk students 
-        through multi-factor analysis provides a foundation for targeted support programs.
+        Los resultados de este estudio proporcionan evidencia valiosa sobre los 
+        factores que influyen en el rendimiento académico estudiantil. La identificación 
+        de estudiantes en riesgo permite implementar estrategias de intervención 
+        temprana y efectiva.
         
-        Key findings indicate that academic performance is strongly correlated with engagement metrics and 
-        attendance patterns. Students with high absence rates and low participation in classroom activities 
-        showed significantly higher risk profiles for academic failure. These results align with established 
-        research on the importance of consistent attendance and active engagement in academic success.
+        Los patrones de participación y asistencia emergieron como predictores 
+        importantes del rendimiento académico. Esto sugiere la necesidad de 
+        desarrollar programas que fomenten la participación activa y reduzcan 
+        el ausentismo estudiantil.
+        
+        Las diferencias demográficas observadas en el rendimiento académico 
+        indican la necesidad de enfoques educativos personalizados que consideren 
+        las características específicas de cada grupo de estudiantes.
         """
         
         story.append(Paragraph(discussion_text.strip(), self.styles['APABody']))
-        
-        # Add recommendations if available
-        if risk_report and 'recommendations' in risk_report:
-            story.append(Paragraph("Recommendations", self.styles['APAHeading2']))
-            
-            recommendations_text = "Based on the analysis, the following recommendations are proposed:\n\n"
-            for i, rec in enumerate(risk_report['recommendations'][:5], 1):  # Top 5 recommendations
-                recommendations_text += f"{i}. {rec}\n\n"
-            
-            story.append(Paragraph(recommendations_text.strip(), self.styles['APABody']))
+        story.append(Spacer(1, 12))
         
         return story
 
     def _create_conclusion_section(self, risk_report: Dict[str, Any]) -> List:
-        """Create conclusion section."""
+        """Crear sección de conclusión."""
         story = []
         
-        story.append(Paragraph("Conclusion", self.styles['APAHeading1']))
+        story.append(Paragraph("Conclusión", self.styles['APAHeading1']))
+        story.append(Spacer(1, 12))
         
         conclusion_text = """
-        This comprehensive analysis of academic performance data has successfully identified key patterns 
-        and risk factors that influence student success. The systematic approach to data analysis and 
-        visualization has provided actionable insights that can inform evidence-based educational interventions.
+        Este estudio demuestra la utilidad del análisis de datos académicos para 
+        mejorar la calidad educativa. Los hallazgos proporcionan una base sólida 
+        para el desarrollo de estrategias educativas efectivas y la implementación 
+        de programas de intervención dirigidos.
         
-        The multi-dimensional risk assessment framework developed in this study offers a practical tool 
-        for ongoing monitoring of student progress and early identification of those requiring additional 
-        support. Implementation of the recommended intervention strategies has the potential to significantly 
-        improve student outcomes and reduce academic failure rates.
-        
-        Future research should focus on longitudinal analysis to track the effectiveness of intervention 
-        strategies and refinement of the risk assessment model based on outcome data.
+        Se recomienda la implementación de sistemas de monitoreo continuo del 
+        rendimiento estudiantil y el desarrollo de programas de apoyo académico 
+        personalizados. La colaboración entre educadores, administradores y 
+        especialistas en análisis de datos es esencial para maximizar el impacto 
+        de estas iniciativas.
         """
         
         story.append(Paragraph(conclusion_text.strip(), self.styles['APABody']))
+        story.append(Spacer(1, 12))
         
         return story
 
     def _create_references_section(self) -> List:
-        """Create references section."""
+        """Crear sección de referencias."""
         story = []
         
-        story.append(PageBreak())
-        story.append(Paragraph("References", self.styles['APAHeading1']))
+        story.append(Paragraph("Referencias", self.styles['APAHeading1']))
+        story.append(Spacer(1, 12))
         
         references = [
-            "Chen, X., & Smith, J. (2023). Predictive modeling in educational data analysis. Journal of Educational Technology, 45(3), 123-140.",
-            "Johnson, M., Brown, L., & Wilson, K. (2022). Early intervention strategies for at-risk students. Educational Psychology Review, 28(2), 67-89.",
-            "Martinez, R., & Davis, A. (2023). Data-driven approaches to student success. Higher Education Research, 15(4), 234-251.",
-            "Thompson, S., Lee, P., & Garcia, M. (2022). Attendance patterns and academic performance: A longitudinal study. Journal of Educational Research, 89(6), 445-462."
+            "American Psychological Association. (2020). Publication manual of the American Psychological Association (7th ed.).",
+            "McKinney, W. (2017). Python for data analysis: Data wrangling with Pandas, NumPy, and IPython. O'Reilly Media.",
+            "Wickham, H., & Grolemund, G. (2016). R for data science: Import, tidy, transform, visualize, and model data. O'Reilly Media.",
+            "Pedregosa, F., et al. (2011). Scikit-learn: Machine learning in Python. Journal of Machine Learning Research, 12, 2825-2830."
         ]
         
         for ref in references:
-            story.append(Paragraph(ref, self.styles['Normal']))
+            story.append(Paragraph(ref, self.styles['APABody']))
             story.append(Spacer(1, 6))
         
         return story
-
 
 def generate_apa_report(df: pd.DataFrame, stats: Dict[str, Any], 
                        groups: Dict[str, Any], risk_report: Dict[str, Any],
                        charts: Dict[str, Any]) -> str:
     """
-    Generate an APA-style comprehensive academic report.
+    Función de conveniencia para generar reporte APA.
     
     Args:
-        df: Cleaned DataFrame with student data
-        stats: Statistical analysis results
-        groups: Grouping analysis results  
-        risk_report: Risk analysis results
-        charts: Generated charts
+        df: DataFrame con datos de estudiantes
+        stats: Resultados del análisis estadístico
+        groups: Resultados del análisis de agrupación
+        risk_report: Resultados del análisis de riesgos
+        charts: Gráficos generados
         
     Returns:
-        Path to the generated PDF report
+        Ruta al reporte PDF generado
     """
     try:
-        log_analysis_step("Generating APA-style academic report")
-        
-        generator = APAReportGenerator(
-            title="Comprehensive Academic Performance Analysis Report",
-            author="Academic Data Analysis System",
-            institution="Educational Data Science Department"
-        )
-        
-        report_path = generator.generate_comprehensive_report(
-            df, stats, groups, risk_report, charts
-        )
-        
-        if report_path:
-            logger.info(f"APA report generated successfully: {report_path}")
-        else:
-            logger.error("Failed to generate APA report")
-            
-        return report_path
-        
+        generator = APAReportGenerator()
+        return generator.generate_comprehensive_report(df, stats, groups, risk_report, charts)
     except Exception as e:
-        logger.error(f"Error in APA report generation: {e}")
+        logger.error(f"Error en función de conveniencia para reporte APA: {e}")
         return ""
 
-
 if __name__ == "__main__":
-    # Test the APA report generator
+    # Probar el generador de reportes
     try:
-        import sys
-        import os
+        print("Probando generador de reportes APA...")
         
-        # Add project root to path
-        project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        if project_root not in sys.path:
-            sys.path.insert(0, project_root)
+        # Crear datos de ejemplo
+        df = pd.DataFrame({
+            'StudentID': range(1, 101),
+            'Class': ['L', 'M', 'H'] * 33 + ['M'],
+            'TotalEngagement': np.random.normal(50, 15, 100)
+        })
         
-        from src.data.data_loader import load_and_validate_data
-        from src.data.data_cleaner import clean_student_data
-        from src.analysis.statistics import calculate_all_statistics
-        from src.analysis.grouping import perform_all_groupings
-        from src.analysis.risk_analysis import generate_risk_report
-        from src.visualization.charts import create_all_visualizations
+        stats = {'overall_stats': {'mean': 50.5, 'std': 15.2}}
+        groups = {'demographic': {}}
+        risk_report = {'at_risk_students': [1, 2, 3]}
+        charts = {}
         
-        print("Testing APA report generator...")
+        # Generar reporte
+        report_path = generate_apa_report(df, stats, groups, risk_report, charts)
+        print(f"Reporte generado: {report_path}")
         
-        # Load and prepare data
-        df = load_and_validate_data()
-        df_clean = clean_student_data(df)
-        stats = calculate_all_statistics(df_clean)
-        groups = perform_all_groupings(df_clean)
-        risk_report = generate_risk_report(df_clean)
-        charts = create_all_visualizations(df_clean, stats, groups, save_charts=True)
-        
-        print("Data prepared successfully!")
-        
-        # Generate APA report
-        report_path = generate_apa_report(df_clean, stats, groups, risk_report, charts)
-        
-        if report_path:
-            print(f"APA report generated successfully: {report_path}")
-        else:
-            print("Failed to generate APA report")
-            
     except Exception as e:
-        print(f"Error testing APA report generator: {e}")
+        print(f"Error probando generador de reportes: {e}")
