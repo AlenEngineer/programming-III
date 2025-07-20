@@ -8,7 +8,7 @@ import os
 
 # Agregar el directorio padre al path para importar config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from config import DATA_FILE_PATH, CATEGORICAL_COLUMNS, NUMERIC_COLUMNS
+from config import DATA_FILE_PATH, CATEGORICAL_COLUMNS, NUMERIC_COLUMNS, CSV_SEPARATOR
 from src.utils.helpers import validate_dataframe_columns, log_analysis_step, setup_logging
 
 # Configurar logging
@@ -40,8 +40,8 @@ def load_csv_data(file_path: Optional[Union[str, Path]] = None) -> pd.DataFrame:
         if not file_path.exists():
             raise FileNotFoundError(f"Archivo no encontrado: {file_path}")
         
-        # Cargar el archivo CSV
-        df = pd.read_csv(file_path)
+        # Cargar el archivo CSV con el separador configurado
+        df = pd.read_csv(file_path, sep=CSV_SEPARATOR)
         
         if df.empty:
             raise ValueError("El archivo CSV está vacío")

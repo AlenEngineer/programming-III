@@ -494,6 +494,232 @@ def create_engagement_correlation_matrix(df: pd.DataFrame, save_path: Optional[s
         logger.error(f"Error creando matriz de correlación: {e}")
         return plt.figure()
 
+def create_regression_analysis_chart(df: pd.DataFrame, save_path: Optional[str] = None) -> mfig.Figure:
+    """
+    Crear un gráfico de regresión mostrando la relación entre calificación final y participación.
+    
+    Args:
+        df: DataFrame conteniendo datos de estudiantes
+        save_path: Ruta opcional para guardar el gráfico
+        
+    Returns:
+        Objeto figura de Matplotlib
+    """
+    try:
+        log_analysis_step("Creando gráfico de análisis de regresión")
+        
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+        
+        # Verificar que las columnas necesarias existan
+        required_cols = ['Calificacion_Final', 'TotalEngagement']
+        available_cols = [col for col in required_cols if col in df.columns]
+        
+        if len(available_cols) < 2:
+            logger.warning("Columnas requeridas no encontradas para análisis de regresión")
+            return fig
+        
+        # Gráfico 1: Regresión curvilínea entre calificación final y participación total
+        if 'Calificacion_Final' in df.columns and 'TotalEngagement' in df.columns:
+            # Preparar datos
+            x = df['Calificacion_Final'].values
+            y = df['TotalEngagement'].values
+            
+            # Crear scatter plot base
+            ax1.scatter(x, y, alpha=0.6, s=50, color='blue', label='Datos observados')
+            
+            # Ordenar datos para las líneas de regresión
+            sort_idx = np.argsort(x)
+            x_sorted = x[sort_idx]
+            y_sorted = y[sort_idx]
+            
+            # 1. Regresión lineal
+            z_linear = np.polyfit(x, y, 1)
+            p_linear = np.poly1d(z_linear)
+            y_linear = p_linear(x_sorted)
+            r2_linear = np.corrcoef(x, y)[0, 1]**2
+            
+            # 2. Regresión cuadrática
+            z_quad = np.polyfit(x, y, 2)
+            p_quad = np.poly1d(z_quad)
+            y_quad = p_quad(x_sorted)
+            r2_quad = 1 - np.sum((y - p_quad(x))**2) / np.sum((y - np.mean(y))**2)
+            
+            # 3. Regresión cúbica
+            z_cubic = np.polyfit(x, y, 3)
+            p_cubic = np.poly1d(z_cubic)
+            y_cubic = p_cubic(x_sorted)
+            r2_cubic = 1 - np.sum((y - p_cubic(x))**2) / np.sum((y - np.mean(y))**2)
+            
+            # 4. Regresión logarítmica (y = a + b*ln(x))
+            # Asegurar que x sea positivo para log
+            x_positive = x[x > 0]
+            y_positive = y[x > 0]
+            if len(x_positive) > 0:
+                log_x = np.log(x_positive)
+                z_log = np.polyfit(log_x, y_positive, 1)
+                p_log = np.poly1d(z_log)
+                y_log = p_log(np.log(x_sorted[x_sorted > 0]))
+                r2_log = 1 - np.sum((y_positive - p_log(log_x))**2) / np.sum((y_positive - np.mean(y_positive))**2)
+            else:
+                r2_log = 0
+            
+            # 5. Regresión exponencial (y = a * exp(b*x))
+            try:
+                from scipy.optimize import curve_fit
+                def exp_func(x, a, b):
+                    return a * np.exp(b * x)
+                
+                popt_exp, _ = curve_fit(exp_func, x, y, maxfev=10000)
+                y_exp = exp_func(x_sorted, *popt_exp)
+                r2_exp = 1 - np.sum((y - exp_func(x, *popt_exp))**2) / np.sum((y - np.mean(y))**2)
+            except:
+                r2_exp = 0
+            
+            # Determinar la mejor regresión basada en R²
+            r2_scores = {
+                'Lineal': r2_linear,
+                'Cuadrática': r2_quad,
+                'Cúbica': r2_cubic,
+                'Logarítmica': r2_log,
+                'Exponencial': r2_exp
+            }
+            
+            best_model = max(r2_scores, key=r2_scores.get)
+            best_r2 = r2_scores[best_model]
+            
+            # Dibujar todas las líneas de regresión
+            ax1.plot(x_sorted, y_linear, '--', color='red', alpha=0.7, 
+                    label=f'Lineal (R²={r2_linear:.3f})')
+            ax1.plot(x_sorted, y_quad, '--', color='green', alpha=0.7, 
+                    label=f'Cuadrática (R²={r2_quad:.3f})')
+            ax1.plot(x_sorted, y_cubic, '--', color='orange', alpha=0.7, 
+                    label=f'Cúbica (R²={r2_cubic:.3f})')
+            
+            if r2_log > 0:
+                ax1.plot(x_sorted[x_sorted > 0], y_log, '--', color='purple', alpha=0.7, 
+                        label=f'Logarítmica (R²={r2_log:.3f})')
+            
+            if r2_exp > 0:
+                ax1.plot(x_sorted, y_exp, '--', color='brown', alpha=0.7, 
+                        label=f'Exponencial (R²={r2_exp:.3f})')
+            
+            # Resaltar la mejor regresión
+            if best_model == 'Lineal':
+                ax1.plot(x_sorted, y_linear, '-', color='red', linewidth=3, 
+                        label=f'MEJOR: {best_model} (R²={best_r2:.3f})')
+            elif best_model == 'Cuadrática':
+                ax1.plot(x_sorted, y_quad, '-', color='green', linewidth=3, 
+                        label=f'MEJOR: {best_model} (R²={best_r2:.3f})')
+            elif best_model == 'Cúbica':
+                ax1.plot(x_sorted, y_cubic, '-', color='orange', linewidth=3, 
+                        label=f'MEJOR: {best_model} (R²={best_r2:.3f})')
+            elif best_model == 'Logarítmica':
+                ax1.plot(x_sorted[x_sorted > 0], y_log, '-', color='purple', linewidth=3, 
+                        label=f'MEJOR: {best_model} (R²={best_r2:.3f})')
+            elif best_model == 'Exponencial':
+                ax1.plot(x_sorted, y_exp, '-', color='brown', linewidth=3, 
+                        label=f'MEJOR: {best_model} (R²={best_r2:.3f})')
+            
+            ax1.set_title('Regresión Curvilínea: Calificación Final vs Participación Total', 
+                         fontsize=14, fontweight='bold')
+            ax1.set_xlabel('Calificación Final', fontsize=12)
+            ax1.set_ylabel('Puntuación de Participación Total', fontsize=12)
+            ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            
+            # Calcular y mostrar correlación
+            correlation = df['Calificacion_Final'].corr(df['TotalEngagement'])
+            ax1.text(0.05, 0.95, f'Correlación: r = {correlation:.3f}\nMejor modelo: {best_model}', 
+                    transform=ax1.transAxes, fontsize=11, fontweight='bold',
+                    bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.9))
+        
+        # Gráfico 2: Regresión entre asistencia y cumplimiento de actividades
+        if 'Porcentaje_Asistencia' in df.columns and 'Cumplimiento_Actividades' in df.columns:
+            # Preparar datos
+            x = df['Porcentaje_Asistencia'].values
+            y = df['Cumplimiento_Actividades'].values
+            
+            # Crear scatter plot base
+            ax2.scatter(x, y, alpha=0.6, s=50, color='blue', label='Datos observados')
+            
+            # Ordenar datos para las líneas de regresión
+            sort_idx = np.argsort(x)
+            x_sorted = x[sort_idx]
+            y_sorted = y[sort_idx]
+            
+            # 1. Regresión lineal
+            z_linear = np.polyfit(x, y, 1)
+            p_linear = np.poly1d(z_linear)
+            y_linear = p_linear(x_sorted)
+            r2_linear = np.corrcoef(x, y)[0, 1]**2
+            
+            # 2. Regresión cuadrática
+            z_quad = np.polyfit(x, y, 2)
+            p_quad = np.poly1d(z_quad)
+            y_quad = p_quad(x_sorted)
+            r2_quad = 1 - np.sum((y - p_quad(x))**2) / np.sum((y - np.mean(y))**2)
+            
+            # 3. Regresión cúbica
+            z_cubic = np.polyfit(x, y, 3)
+            p_cubic = np.poly1d(z_cubic)
+            y_cubic = p_cubic(x_sorted)
+            r2_cubic = 1 - np.sum((y - p_cubic(x))**2) / np.sum((y - np.mean(y))**2)
+            
+            # Determinar la mejor regresión
+            r2_scores = {
+                'Lineal': r2_linear,
+                'Cuadrática': r2_quad,
+                'Cúbica': r2_cubic
+            }
+            
+            best_model = max(r2_scores, key=r2_scores.get)
+            best_r2 = r2_scores[best_model]
+            
+            # Dibujar líneas de regresión
+            ax2.plot(x_sorted, y_linear, '--', color='red', alpha=0.7, 
+                    label=f'Lineal (R²={r2_linear:.3f})')
+            ax2.plot(x_sorted, y_quad, '--', color='green', alpha=0.7, 
+                    label=f'Cuadrática (R²={r2_quad:.3f})')
+            ax2.plot(x_sorted, y_cubic, '--', color='orange', alpha=0.7, 
+                    label=f'Cúbica (R²={r2_cubic:.3f})')
+            
+            # Resaltar la mejor regresión
+            if best_model == 'Lineal':
+                ax2.plot(x_sorted, y_linear, '-', color='red', linewidth=3, 
+                        label=f'MEJOR: {best_model} (R²={best_r2:.3f})')
+            elif best_model == 'Cuadrática':
+                ax2.plot(x_sorted, y_quad, '-', color='green', linewidth=3, 
+                        label=f'MEJOR: {best_model} (R²={best_r2:.3f})')
+            elif best_model == 'Cúbica':
+                ax2.plot(x_sorted, y_cubic, '-', color='orange', linewidth=3, 
+                        label=f'MEJOR: {best_model} (R²={best_r2:.3f})')
+            
+            ax2.set_title('Regresión: Asistencia vs Cumplimiento de Actividades', 
+                         fontsize=14, fontweight='bold')
+            ax2.set_xlabel('Porcentaje de Asistencia (%)', fontsize=12)
+            ax2.set_ylabel('Cumplimiento de Actividades (%)', fontsize=12)
+            ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            
+            # Calcular y mostrar correlación
+            correlation = df['Porcentaje_Asistencia'].corr(df['Cumplimiento_Actividades'])
+            ax2.text(0.05, 0.95, f'Correlación: r = {correlation:.3f}\nMejor modelo: {best_model}', 
+                    transform=ax2.transAxes, fontsize=11, fontweight='bold',
+                    bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.9))
+        
+        plt.tight_layout()
+        
+        # Guardar si se proporciona ruta
+        if save_path:
+            create_output_directory(Path(save_path).parent)
+            plt.savefig(save_path, dpi=DPI, bbox_inches='tight')
+            logger.info(f"Gráfico de análisis de regresión guardado en {save_path}")
+        
+        logger.info("Gráfico de análisis de regresión creado exitosamente")
+        return fig
+        
+    except Exception as e:
+        logger.error(f"Error creando gráfico de análisis de regresión: {e}")
+        return plt.figure()
+
 def create_all_visualizations(df: pd.DataFrame, stats: Dict[str, Any], 
                             groups: Dict[str, Any], save_charts: bool = True) -> Dict[str, mfig.Figure]:
     """
@@ -524,7 +750,8 @@ def create_all_visualizations(df: pd.DataFrame, stats: Dict[str, Any],
             ('dispersión_rendimiento', create_performance_scatter, 'dispersión_rendimiento.png'),
             ('mapa_calor_asistencia', create_attendance_heatmap, 'mapa_calor_asistencia.png'),
             ('análisis_demográfico', create_demographic_analysis_charts, 'análisis_demográfico.png'),
-            ('matriz_correlación', create_engagement_correlation_matrix, 'matriz_correlación.png')
+            ('matriz_correlación', create_engagement_correlation_matrix, 'matriz_correlación.png'),
+            ('análisis_regresión', create_regression_analysis_chart, 'análisis_regresión.png')
         ]
         
         # Crear cada gráfico

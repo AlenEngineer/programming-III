@@ -1,0 +1,41 @@
+﻿ID_Estudiante;Carrera;Semestre;Materia;Grupo;Docente;Calificacion_Final;Porcentaje_Asistencia;Cumplimiento_Actividades
+2001;Ingeniería de Software;5;Bases de Datos;A;Prof. Garcia;95;98;100
+2002;Derecho;1;Introducción al Derecho;B;Prof. Martinez;68;75;70
+2003;Medicina;1;Anatomía Humana;C;Prof. Lopez;59;60;55
+2004;Arquitectura;3;Taller de Diseño II;A;Prof. Hernandez;92;95;98
+2005;Psicología;5;Psicopatología;A;Prof. Rodriguez;78;88;90
+2006;Ingeniería de Software;5;Bases de Datos;A;Prof. Garcia;62;55;65
+2007;Derecho;1;Introducción al Derecho;B;Prof. Martinez;88;96;95
+2008;Medicina;1;Anatomía Humana;C;Prof. Lopez;91;99;100
+2009;Arquitectura;3;Taller de Diseño II;A;Prof. Hernandez;71;80;85
+2010;Psicología;5;Psicopatología;A;Prof. Rodriguez;65;70;68
+2011;Ingeniería de Software;1;Algoritmos y Programación;A;Prof. Gonzalez;55;50;60
+2012;Derecho;3;Derecho Constitucional;A;Prof. Martinez;94;98;99
+2013;Medicina;3;Fisiología;B;Prof. Lopez;76;85;88
+2014;Arquitectura;1;Dibujo Técnico I;B;Prof. Hernandez;61;72;65
+2015;Psicología;1;Introducción a la Psicología;A;Prof. Rodriguez;89;97;95
+2016;Ingeniería de Software;1;Algoritmos y Programación;A;Prof. Gonzalez;98;100;100
+2017;Derecho;3;Derecho Constitucional;A;Prof. Martinez;67;78;70
+2018;Medicina;3;Fisiología;B;Prof. Lopez;63;65;70
+2019;Arquitectura;1;Dibujo Técnico I;B;Prof. Hernandez;85;92;94
+2020;Psicología;1;Introducción a la Psicología;A;Prof. Rodriguez;79;90;88
+2021;Ingeniería de Software;5;Sistemas Operativos;B;Prof. Garcia;88;94;96
+2022;Derecho;5;Obligaciones Civiles;A;Prof. Martinez;93;97;98
+2023;Medicina;5;Bioquímica;A;Prof. Lopez;69;79;75
+2024;Arquitectura;5;Urbanismo I;B;Prof. Hernandez;81;90;92
+2025;Psicología;3;Teorías de la Personalidad;B;Prof. Rodriguez;96;99;100
+2026;Ingeniería de Software;5;Sistemas Operativos;B;Prof. Garcia;60;68;62
+2027;Derecho;5;Obligaciones Civiles;A;Prof. Martinez;72;81;85
+2028;Medicina;5;Bioquímica;A;Prof. Lopez;89;96;97
+2029;Arquitectura;5;Urbanismo I;B;Prof. Hernandez;64;75;70
+2030;Psicología;3;Teorías de la Personalidad;B;Prof. Rodriguez;75;85;88
+2031;Ingeniería de Software;3;Estructuras de Datos;A;Prof. Gonzalez;91;95;98
+2032;Derecho;7;Derecho Penal II;A;Prof. Martinez;84;92;93
+2033;Medicina;1;Anatomía Humana;C;Prof. Lopez;73;88;85
+2034;Arquitectura;3;Taller de Diseño II;A;Prof. Hernandez;58;62;60
+2035;Psicología;5;Psicopatología;A;Prof. Rodriguez;90;96;97
+2036;Ingeniería de Software;3;Estructuras de Datos;A;Prof. Gonzalez;66;70;75
+2037;Derecho;7;Derecho Penal II;A;Prof. Martinez;97;100;100
+2038;Medicina;3;Fisiología;B;Prof. Lopez;57;55;65
+2039;Arquitectura;1;Dibujo Técnico I;B;Prof. Hernandez;93;98;96
+2040;Psicología;1;Introducción a la Psicología;A;Prof. Rodriguez;69;80;78

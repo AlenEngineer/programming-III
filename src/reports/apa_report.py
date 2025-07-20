@@ -214,28 +214,35 @@ class APAReportGenerator:
 
     def _create_abstract(self, df: pd.DataFrame, stats: Dict[str, Any], 
                         risk_report: Dict[str, Any]) -> List:
-        """Crear sección de resumen."""
+        """Crear resumen ejecutivo estilo APA."""
         story = []
         
-        story.append(Paragraph("Resumen", self.styles['APAHeading1']))
+        story.append(Paragraph("RESUMEN", self.styles['APAHeading1']))
         story.append(Spacer(1, 12))
         
-        # Generar texto del resumen
+        # Calcular estadísticas clave
         total_students = len(df)
-        at_risk_count = len(risk_report.get('at_risk_students', []))
+        avg_grade = df['Calificacion_Final'].mean() if 'Calificacion_Final' in df.columns else 0
+        avg_attendance = df['Porcentaje_Asistencia'].mean() if 'Porcentaje_Asistencia' in df.columns else 0
+        avg_compliance = df['Cumplimiento_Actividades'].mean() if 'Cumplimiento_Actividades' in df.columns else 0
+        
+        # Contar estudiantes en riesgo
+        at_risk_count = risk_report.get('total_at_risk_students', 0)
         risk_percentage = (at_risk_count / total_students * 100) if total_students > 0 else 0
         
         abstract_text = f"""
-        Este estudio presenta un análisis integral del rendimiento académico estudiantil 
-        basado en un conjunto de datos de {total_students:,} estudiantes. El análisis 
-        incluye evaluación de patrones de participación, análisis demográfico y 
-        identificación de estudiantes en riesgo académico. Los resultados muestran que 
-        {at_risk_count} estudiantes ({risk_percentage:.1f}%) presentan factores de riesgo 
-        que requieren intervención. El estudio proporciona recomendaciones para mejorar 
-        el rendimiento académico y reducir las tasas de deserción.
+        Este estudio presenta un análisis integral del rendimiento académico de {total_students} estudiantes 
+        de la Universidad Tecnológica de Panamá, utilizando datos de calificaciones finales, porcentaje de 
+        asistencia y cumplimiento de actividades. Los resultados muestran un promedio de calificación de 
+        {avg_grade:.1f} puntos, con una tasa de asistencia promedio del {avg_attendance:.1f}% y un cumplimiento 
+        de actividades del {avg_compliance:.1f}%. Se identificaron {at_risk_count} estudiantes ({risk_percentage:.1f}%) 
+        en situación de riesgo académico, definido por calificaciones bajas, asistencia deficiente o bajo 
+        cumplimiento de actividades. El análisis incluye comparaciones por materia, semestre y carrera, 
+        proporcionando insights valiosos para la toma de decisiones académicas y la implementación de 
+        estrategias de intervención temprana.
         """
         
-        story.append(Paragraph(abstract_text.strip(), self.styles['APAAbstract']))
+        story.append(Paragraph(abstract_text, self.styles['APAAbstract']))
         story.append(Spacer(1, 12))
         
         return story
@@ -244,22 +251,29 @@ class APAReportGenerator:
         """Crear sección de introducción."""
         story = []
         
-        story.append(Paragraph("Introducción", self.styles['APAHeading1']))
+        story.append(Paragraph("INTRODUCCIÓN", self.styles['APAHeading1']))
         story.append(Spacer(1, 12))
         
         intro_text = """
-        El análisis de datos académicos se ha convertido en una herramienta fundamental 
-        para mejorar la calidad educativa y el rendimiento estudiantil. Este reporte 
-        presenta un análisis comprehensivo de datos de rendimiento académico utilizando 
-        metodologías estadísticas avanzadas y técnicas de visualización de datos.
+        El análisis del rendimiento académico estudiantil es fundamental para el desarrollo de 
+        estrategias educativas efectivas y la identificación temprana de estudiantes en riesgo. 
+        La Universidad Tecnológica de Panamá, comprometida con la excelencia académica, requiere 
+        herramientas analíticas robustas para evaluar el progreso de sus estudiantes y optimizar 
+        los procesos de enseñanza-aprendizaje.
         
-        El objetivo principal de este estudio es identificar patrones de rendimiento, 
-        factores de riesgo académico y oportunidades de mejora en el proceso educativo. 
-        Los resultados obtenidos proporcionan una base sólida para la toma de decisiones 
-        informadas en el ámbito educativo.
+        Este estudio utiliza técnicas de análisis de datos para examinar múltiples dimensiones 
+        del rendimiento académico, incluyendo calificaciones finales, patrones de asistencia y 
+        cumplimiento de actividades académicas. La integración de estas métricas permite una 
+        evaluación holística del desempeño estudiantil y la identificación de factores que 
+        contribuyen al éxito o fracaso académico.
+        
+        Los objetivos específicos de este análisis incluyen: (1) evaluar el rendimiento general 
+        de los estudiantes por materia y semestre, (2) identificar estudiantes en riesgo académico 
+        basándose en múltiples indicadores, (3) analizar patrones de asistencia y participación, 
+        y (4) proporcionar recomendaciones para intervenciones académicas efectivas.
         """
         
-        story.append(Paragraph(intro_text.strip(), self.styles['APABody']))
+        story.append(Paragraph(intro_text, self.styles['APABody']))
         story.append(Spacer(1, 12))
         
         return story
@@ -268,37 +282,38 @@ class APAReportGenerator:
         """Crear sección de métodos."""
         story = []
         
-        story.append(Paragraph("Métodos", self.styles['APAHeading1']))
+        story.append(Paragraph("MÉTODO", self.styles['APAHeading1']))
         story.append(Spacer(1, 12))
         
         # Información del dataset
-        story.append(Paragraph("Participantes", self.styles['APAHeading2']))
-        story.append(Spacer(1, 6))
+        total_students = len(df)
+        total_careers = df['Carrera'].nunique() if 'Carrera' in df.columns else 0
+        total_subjects = df['Materia'].nunique() if 'Materia' in df.columns else 0
+        total_semesters = df['Semestre'].nunique() if 'Semestre' in df.columns else 0
         
-        participants_text = f"""
-        El estudio incluyó {len(df):,} estudiantes de diferentes niveles educativos. 
-        Los datos fueron recolectados de manera sistemática y anonimizada para proteger 
-        la privacidad de los participantes.
+        methods_text = f"""
+        <b>Participantes</b><br/>
+        El estudio incluyó {total_students} estudiantes de la Universidad Tecnológica de Panamá, 
+        distribuidos en {total_careers} carreras diferentes, {total_subjects} materias y {total_semesters} 
+        semestres académicos. Los datos fueron recolectados durante el período académico actual 
+        y representan una muestra diversa de la población estudiantil.
+        
+        <b>Variables de Medida</b><br/>
+        Se analizaron tres variables principales de rendimiento académico:
+        • <i>Calificación Final:</i> Puntuación numérica obtenida por el estudiante en cada materia (escala 0-100)
+        • <i>Porcentaje de Asistencia:</i> Proporción de clases asistidas durante el semestre (escala 0-100%)
+        • <i>Cumplimiento de Actividades:</i> Porcentaje de actividades académicas completadas (escala 0-100%)
+        
+        <b>Procedimiento de Análisis</b><br/>
+        Los datos fueron procesados utilizando técnicas de limpieza y validación para asegurar 
+        la calidad de la información. Se aplicaron análisis estadísticos descriptivos, análisis 
+        de correlación y técnicas de agrupación para identificar patrones en el rendimiento 
+        académico. Los estudiantes en riesgo fueron identificados utilizando umbrales específicos: 
+        calificaciones menores a 60 puntos, asistencia menor al 75% y cumplimiento de actividades 
+        menor al 70%.
         """
-        story.append(Paragraph(participants_text.strip(), self.styles['APABody']))
-        story.append(Spacer(1, 12))
         
-        # Metodología
-        story.append(Paragraph("Metodología", self.styles['APAHeading2']))
-        story.append(Spacer(1, 6))
-        
-        methodology_text = """
-        Se utilizó un enfoque de análisis de datos mixto que incluye estadística 
-        descriptiva, análisis de correlación y técnicas de agrupación. Los datos 
-        fueron procesados utilizando Python con bibliotecas especializadas en 
-        análisis estadístico y visualización de datos.
-        
-        El análisis incluyó la identificación de patrones de participación, 
-        evaluación de factores demográficos y análisis de riesgo académico. 
-        Se aplicaron técnicas de limpieza de datos y validación para asegurar 
-        la calidad de los resultados.
-        """
-        story.append(Paragraph(methodology_text.strip(), self.styles['APABody']))
+        story.append(Paragraph(methods_text, self.styles['APABody']))
         story.append(Spacer(1, 12))
         
         return story
@@ -309,57 +324,165 @@ class APAReportGenerator:
         """Crear sección de resultados."""
         story = []
         
-        story.append(Paragraph("Resultados", self.styles['APAHeading1']))
+        story.append(Paragraph("RESULTADOS", self.styles['APAHeading1']))
         story.append(Spacer(1, 12))
         
-        # Estadísticas descriptivas
-        story.append(Paragraph("Estadísticas Descriptivas", self.styles['APAHeading2']))
+        # Estadísticas descriptivas generales
+        story.append(Paragraph("Estadísticas Descriptivas Generales", self.styles['APAHeading2']))
         story.append(Spacer(1, 6))
         
-        if 'overall_stats' in stats:
-            overall = stats['overall_stats']
-            desc_text = f"""
-            El análisis de {len(df):,} estudiantes reveló un promedio de participación 
-            de {overall.get('mean', 0):.2f} (DE = {overall.get('std', 0):.2f}). 
-            La distribución de calificaciones mostró variabilidad significativa 
-            entre los diferentes grupos de estudiantes.
-            """
-        else:
-            desc_text = f"""
-            El análisis incluyó {len(df):,} estudiantes con datos completos de 
-            rendimiento académico y participación en actividades educativas.
-            """
+        # Calcular estadísticas clave
+        total_students = len(df)
+        avg_grade = df['Calificacion_Final'].mean() if 'Calificacion_Final' in df.columns else 0
+        std_grade = df['Calificacion_Final'].std() if 'Calificacion_Final' in df.columns else 0
+        avg_attendance = df['Porcentaje_Asistencia'].mean() if 'Porcentaje_Asistencia' in df.columns else 0
+        avg_compliance = df['Cumplimiento_Actividades'].mean() if 'Cumplimiento_Actividades' in df.columns else 0
         
-        story.append(Paragraph(desc_text.strip(), self.styles['APABody']))
+        # Distribución de calificaciones
+        high_performance = len(df[df['Calificacion_Final'] >= 85]) if 'Calificacion_Final' in df.columns else 0
+        medium_performance = len(df[(df['Calificacion_Final'] >= 60) & (df['Calificacion_Final'] < 85)]) if 'Calificacion_Final' in df.columns else 0
+        low_performance = len(df[df['Calificacion_Final'] < 60]) if 'Calificacion_Final' in df.columns else 0
+        
+        results_text = f"""
+        <b>Rendimiento Académico General</b><br/>
+        El análisis de {total_students} estudiantes reveló un promedio de calificación final de 
+        {avg_grade:.1f} puntos (DE = {std_grade:.1f}). La distribución de rendimiento mostró 
+        {high_performance} estudiantes ({high_performance/total_students*100:.1f}%) con rendimiento alto 
+        (≥85 puntos), {medium_performance} estudiantes ({medium_performance/total_students*100:.1f}%) 
+        con rendimiento medio (60-84 puntos), y {low_performance} estudiantes ({low_performance/total_students*100:.1f}%) 
+        con rendimiento bajo (<60 puntos).
+        
+        <b>Patrones de Asistencia y Participación</b><br/>
+        El porcentaje promedio de asistencia fue del {avg_attendance:.1f}%, indicando una buena 
+        participación general en las actividades presenciales. El cumplimiento de actividades 
+        académicas alcanzó un promedio del {avg_compliance:.1f}%, demostrando un compromiso 
+        moderado con las tareas asignadas.
+        """
+        
+        story.append(Paragraph(results_text, self.styles['APABody']))
         story.append(Spacer(1, 12))
         
-        # Análisis de riesgos
-        story.append(Paragraph("Análisis de Riesgos Académicos", self.styles['APAHeading2']))
+        # Análisis por materia
+        if 'Materia' in df.columns and 'Calificacion_Final' in df.columns:
+            story.append(Paragraph("Análisis por Materia", self.styles['APAHeading2']))
+            story.append(Spacer(1, 6))
+            
+            subject_stats = df.groupby('Materia', observed=True)['Calificacion_Final'].agg(['mean', 'count']).round(2)
+            subject_stats = subject_stats.sort_values('mean', ascending=False)
+            
+            # Top 5 materias con mejor rendimiento
+            top_subjects = subject_stats.head(5)
+            top_subjects_text = "Las materias con mejor rendimiento promedio fueron: "
+            for i, (subject, row) in enumerate(top_subjects.iterrows()):
+                if i > 0:
+                    top_subjects_text += ", "
+                top_subjects_text += f"{subject} ({row['mean']:.1f} puntos, n={int(row['count'])})"
+            top_subjects_text += "."
+            
+            story.append(Paragraph(top_subjects_text, self.styles['APABody']))
+            story.append(Spacer(1, 12))
+        
+        # Análisis por semestre
+        if 'Semestre' in df.columns and 'Calificacion_Final' in df.columns:
+            story.append(Paragraph("Análisis por Semestre", self.styles['APAHeading2']))
+            story.append(Spacer(1, 6))
+            
+            semester_stats = df.groupby('Semestre', observed=True)['Calificacion_Final'].agg(['mean', 'count']).round(2)
+            semester_text = "El rendimiento por semestre mostró las siguientes tendencias: "
+            for semester, row in semester_stats.iterrows():
+                semester_text += f"Semestre {semester}: {row['mean']:.1f} puntos (n={int(row['count'])}), "
+            semester_text = semester_text.rstrip(", ") + "."
+            
+            story.append(Paragraph(semester_text, self.styles['APABody']))
+            story.append(Spacer(1, 12))
+        
+        # Análisis de riesgo
+        story.append(Paragraph("Identificación de Estudiantes en Riesgo", self.styles['APAHeading2']))
         story.append(Spacer(1, 6))
         
-        at_risk_count = len(risk_report.get('at_risk_students', []))
-        risk_percentage = (at_risk_count / len(df) * 100) if len(df) > 0 else 0
+        at_risk_count = risk_report.get('total_at_risk_students', 0)
+        risk_percentage = (at_risk_count / total_students * 100) if total_students > 0 else 0
         
         risk_text = f"""
-        Se identificaron {at_risk_count} estudiantes ({risk_percentage:.1f}%) 
-        con factores de riesgo académico significativos. Estos estudiantes 
-        presentan patrones de baja participación, ausentismo elevado o 
-        rendimiento académico deficiente que requieren intervención inmediata.
+        Se identificaron {at_risk_count} estudiantes ({risk_percentage:.1f}%) en situación de riesgo 
+        académico, definido por calificaciones bajas, asistencia deficiente o bajo cumplimiento 
+        de actividades. Estos estudiantes requieren intervención académica inmediata para 
+        mejorar su rendimiento y reducir el riesgo de fracaso académico.
         """
-        story.append(Paragraph(risk_text.strip(), self.styles['APABody']))
+        
+        story.append(Paragraph(risk_text, self.styles['APABody']))
         story.append(Spacer(1, 12))
         
-        # Análisis demográfico
-        story.append(Paragraph("Análisis Demográfico", self.styles['APAHeading2']))
+        # Correlaciones
+        if 'Calificacion_Final' in df.columns and 'Porcentaje_Asistencia' in df.columns and 'Cumplimiento_Actividades' in df.columns:
+            story.append(Paragraph("Análisis de Correlaciones", self.styles['APAHeading2']))
+            story.append(Spacer(1, 6))
+            
+            corr_grade_attendance = df['Calificacion_Final'].corr(df['Porcentaje_Asistencia'])
+            corr_grade_compliance = df['Calificacion_Final'].corr(df['Cumplimiento_Actividades'])
+            corr_attendance_compliance = df['Porcentaje_Asistencia'].corr(df['Cumplimiento_Actividades'])
+            
+            correlation_text = f"""
+            El análisis de correlación reveló relaciones significativas entre las variables de 
+            rendimiento: la correlación entre calificación final y asistencia fue r = {corr_grade_attendance:.3f}, 
+            entre calificación final y cumplimiento de actividades fue r = {corr_grade_compliance:.3f}, 
+            y entre asistencia y cumplimiento de actividades fue r = {corr_attendance_compliance:.3f}. 
+            Estas correlaciones sugieren que la asistencia y el cumplimiento de actividades están 
+            positivamente relacionados con el rendimiento académico.
+            """
+            
+            story.append(Paragraph(correlation_text, self.styles['APABody']))
+            story.append(Spacer(1, 12))
+        
+        # Agregar visualizaciones
+        story.extend(self._create_visualizations_section(charts))
+        
+        return story
+
+    def _create_visualizations_section(self, charts: Dict[str, Any]) -> List:
+        """Crear sección de visualizaciones con las gráficas más importantes."""
+        story = []
+        
+        story.append(Paragraph("Visualizaciones del Análisis", self.styles['APAHeading2']))
         story.append(Spacer(1, 6))
         
-        demo_text = """
-        El análisis demográfico reveló diferencias significativas en el rendimiento 
-        académico entre diferentes grupos de estudiantes. Se observaron patrones 
-        distintivos relacionados con género, nacionalidad y nivel educativo.
+        intro_text = """
+        Las siguientes visualizaciones proporcionan una representación gráfica de los hallazgos 
+        principales del análisis, facilitando la comprensión de los patrones y tendencias 
+        identificados en el rendimiento académico de los estudiantes.
         """
-        story.append(Paragraph(demo_text.strip(), self.styles['APABody']))
+        story.append(Paragraph(intro_text, self.styles['APABody']))
         story.append(Spacer(1, 12))
+        
+        # Lista de gráficas a incluir en orden de importancia
+        chart_files = [
+            ("distribución_calificaciones.png", "Figura 1. Distribución de Calificaciones de Rendimiento"),
+            ("comparación_materias.png", "Figura 2. Promedio de Participación por Materia"),
+            ("tendencias_semestrales.png", "Figura 3. Análisis de Rendimiento por Semestre"),
+            ("matriz_correlación.png", "Figura 4. Matriz de Correlación entre Variables"),
+            ("análisis_regresión.png", "Figura 5. Análisis de Regresión: Relaciones entre Variables")
+        ]
+        
+        for i, (filename, title) in enumerate(chart_files, 1):
+            chart_path = CHARTS_DIR / filename
+            
+            if chart_path.exists():
+                # Título de la figura
+                story.append(Paragraph(title, self.styles['APAHeading2']))
+                story.append(Spacer(1, 6))
+                
+                # Agregar la imagen
+                img = Image(str(chart_path), width=6*inch, height=4*inch)
+                img.hAlign = 'CENTER'
+                story.append(img)
+                story.append(Spacer(1, 12))
+                
+                # Espacio para análisis (líneas en blanco)
+                story.append(Spacer(1, 24))
+                
+                logger.info(f"Gráfica {i} incluida en el reporte: {filename}")
+            else:
+                logger.warning(f"Archivo de gráfica no encontrado: {chart_path}")
         
         return story
 
@@ -367,26 +490,36 @@ class APAReportGenerator:
         """Crear sección de discusión."""
         story = []
         
-        story.append(Paragraph("Discusión", self.styles['APAHeading1']))
+        story.append(Paragraph("DISCUSIÓN", self.styles['APAHeading1']))
         story.append(Spacer(1, 12))
         
-        discussion_text = """
-        Los resultados de este estudio proporcionan evidencia valiosa sobre los 
-        factores que influyen en el rendimiento académico estudiantil. La identificación 
-        de estudiantes en riesgo permite implementar estrategias de intervención 
-        temprana y efectiva.
+        at_risk_count = risk_report.get('total_at_risk_students', 0)
         
-        Los patrones de participación y asistencia emergieron como predictores 
-        importantes del rendimiento académico. Esto sugiere la necesidad de 
-        desarrollar programas que fomenten la participación activa y reduzcan 
-        el ausentismo estudiantil.
+        discussion_text = f"""
+        Los resultados de este análisis proporcionan insights valiosos sobre el rendimiento 
+        académico de los estudiantes de la Universidad Tecnológica de Panamá. La identificación 
+        de {at_risk_count} estudiantes en situación de riesgo académico destaca la importancia 
+        de implementar sistemas de alerta temprana y estrategias de intervención proactivas.
         
-        Las diferencias demográficas observadas en el rendimiento académico 
-        indican la necesidad de enfoques educativos personalizados que consideren 
-        las características específicas de cada grupo de estudiantes.
+        <b>Implicaciones para la Práctica Educativa</b><br/>
+        Los hallazgos sugieren que la asistencia y el cumplimiento de actividades académicas 
+        son predictores importantes del rendimiento académico. Esto refuerza la necesidad de 
+        monitorear no solo las calificaciones finales, sino también los patrones de participación 
+        y compromiso de los estudiantes a lo largo del semestre.
+        
+        <b>Estrategias de Intervención</b><br/>
+        Para los estudiantes identificados en riesgo, se recomienda implementar programas de 
+        tutoría académica, sesiones de refuerzo y seguimiento individualizado. La correlación 
+        positiva entre asistencia y rendimiento sugiere que las estrategias que promueven la 
+        participación regular en clases pueden tener un impacto significativo en el éxito académico.
+        
+        <b>Limitaciones del Estudio</b><br/>
+        Es importante reconocer que este análisis se basa en datos de un período académico 
+        específico y puede no reflejar tendencias a largo plazo. Además, el tamaño de la muestra 
+        limita la generalización de los resultados a toda la población estudiantil de la universidad.
         """
         
-        story.append(Paragraph(discussion_text.strip(), self.styles['APABody']))
+        story.append(Paragraph(discussion_text, self.styles['APABody']))
         story.append(Spacer(1, 12))
         
         return story
@@ -395,23 +528,29 @@ class APAReportGenerator:
         """Crear sección de conclusión."""
         story = []
         
-        story.append(Paragraph("Conclusión", self.styles['APAHeading1']))
+        story.append(Paragraph("CONCLUSIÓN", self.styles['APAHeading1']))
         story.append(Spacer(1, 12))
         
-        conclusion_text = """
-        Este estudio demuestra la utilidad del análisis de datos académicos para 
-        mejorar la calidad educativa. Los hallazgos proporcionan una base sólida 
-        para el desarrollo de estrategias educativas efectivas y la implementación 
-        de programas de intervención dirigidos.
+        at_risk_count = risk_report.get('total_at_risk_students', 0)
         
-        Se recomienda la implementación de sistemas de monitoreo continuo del 
-        rendimiento estudiantil y el desarrollo de programas de apoyo académico 
-        personalizados. La colaboración entre educadores, administradores y 
-        especialistas en análisis de datos es esencial para maximizar el impacto 
-        de estas iniciativas.
+        conclusion_text = f"""
+        Este estudio demuestra la utilidad del análisis de datos académicos para identificar 
+        estudiantes en riesgo y optimizar las estrategias educativas. La identificación de 
+        {at_risk_count} estudiantes que requieren intervención inmediata subraya la importancia 
+        de sistemas de monitoreo continuo del rendimiento académico.
+        
+        Los resultados apoyan la implementación de programas de intervención temprana que 
+        aborden tanto los aspectos académicos como los patrones de participación de los 
+        estudiantes. La Universidad Tecnológica de Panamá puede utilizar estos hallazgos 
+        para desarrollar políticas educativas más efectivas y mejorar las tasas de retención 
+        y éxito académico.
+        
+        Se recomienda continuar con análisis similares en períodos académicos futuros para 
+        evaluar la efectividad de las intervenciones implementadas y ajustar las estrategias 
+        según sea necesario.
         """
         
-        story.append(Paragraph(conclusion_text.strip(), self.styles['APABody']))
+        story.append(Paragraph(conclusion_text, self.styles['APABody']))
         story.append(Spacer(1, 12))
         
         return story

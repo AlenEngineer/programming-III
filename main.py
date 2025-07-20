@@ -133,8 +133,8 @@ def run_complete_analysis(data_file: Optional[str] = None,
         if generate_report:
             log_analysis_step("Generando reporte PDF estilo APA")
             report_file = generate_apa_report(
-                df_clean, statistics, demographic_analysis, 
-                engagement_analysis, risk_report
+                df_clean, statistics, engagement_analysis, 
+                risk_report, chart_files
             )
             results['report_file'] = report_file
             logger.info(f"Reporte estilo APA generado: {report_file}")
