@@ -137,14 +137,15 @@ Responsable de la generación de gráficos y visualizaciones.
 ### 📁 **src/reports/** - Capa de Reportes
 Generación de reportes profesionales.
 
-#### `apa_report.py` & `apa_report_generator.py`
+#### `apa_report.py`
 - **Propósito**: Generación de reportes en formato APA
 - **Funcionalidades**:
   - Estructura de reporte académico
-  - Integración de visualizaciones
-  - Formato profesional
-  - Exportación a PDF
-- **Dependencias**: reportlab, matplotlib
+  - Integración de visualizaciones en PDF
+  - Formato profesional estilo APA
+  - Exportación a PDF con gráficas incluidas
+  - Análisis estadístico integrado
+- **Dependencias**: reportlab, matplotlib, pandas
 
 ### 📁 **src/utils/** - Capa de Utilidades
 Funciones auxiliares y utilidades transversales.
@@ -353,6 +354,43 @@ Funciones auxiliares y utilidades transversales.
 - Cache distribuido con Redis
 - Queue system para procesamiento asíncrono
 
+## 🚀 Mejoras Recientes Implementadas
+
+### **Análisis de Regresión Curvilínea (v2.0)**
+- **Nuevas funcionalidades**:
+  - Gráfica de regresión con 5 modelos (lineal, cuadrática, cúbica, logarítmica, exponencial)
+  - Selección automática del mejor modelo basada en R²
+  - Visualización comparativa de modelos
+  - Integración completa en reportes PDF
+- **Beneficios**: Análisis más sofisticado de relaciones entre variables
+
+### **Adaptación a Nuevo Dataset**
+- **Cambios implementados**:
+  - Soporte para separador CSV ';' (nuevo archivo)
+  - Mapeo de columnas para compatibilidad
+  - Actualización de configuraciones
+  - Limpieza de datos mejorada
+- **Beneficios**: Flexibilidad para diferentes formatos de datos
+
+### **Limpieza de Código (Refactorización)**
+- **Elementos eliminados**:
+  - Archivo duplicado `apa_report_generator.py` (657 líneas)
+  - Función no utilizada `get_numeric_summary()` (20+ líneas)
+  - Archivos temporales y de cache
+  - Código redundante y comentarios obsoletos
+- **Resultados**:
+  - Reducción de 677 líneas de código
+  - Eliminación de 781KB de archivos temporales
+  - Código más mantenible y eficiente
+
+### **Integración de Visualizaciones en Reportes**
+- **Nuevas características**:
+  - 5 gráficas principales integradas en PDF
+  - Espacio dedicado para análisis de visualizaciones
+  - Formato profesional con títulos y descripciones
+  - Generación automática de reportes con gráficas
+- **Beneficios**: Reportes más visuales y profesionales
+
 ---
 
-**Este documento debe actualizarse conforme evoluciona el sistema. Fecha de última actualización: [Fecha actual]**
+**Este documento debe actualizarse conforme evoluciona el sistema. Fecha de última actualización: Julio 2025**

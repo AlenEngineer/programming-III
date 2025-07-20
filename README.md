@@ -40,8 +40,7 @@ programming-iii/
 │   ├── visualization/     # Módulos de visualización
 │   │   └── charts.py         # Generación de gráficos
 │   ├── reports/           # Módulos de reportes
-│   │   ├── apa_report.py     # Generación de reportes APA
-│   │   └── apa_report_generator.py
+│   │   └── apa_report.py     # Generación de reportes APA con gráficas
 │   └── utils/             # Utilidades
 │       └── helpers.py        # Funciones auxiliares
 └── output/                # Archivos de salida
@@ -90,17 +89,18 @@ El archivo `config.py` contiene todas las configuraciones importantes:
 
 ```python
 # Rutas de archivos
-DATA_FILE_PATH = "xAPI-Edu-Data.csv"
+DATA_FILE_PATH = "1SG131 SEM P3 Analisis Reg Acad Estudiantil(P3 Proy Sem datos acad).csv"
+CSV_SEPARATOR = ";"  # Separador del nuevo archivo CSV
 OUTPUT_DIR = "output"
 
 # Umbrales de rendimiento
 MINIMUM_PASSING_GRADE = 60
 EXCELLENT_GRADE = 85
-RISK_ABSENCE_THRESHOLD = 7
+RISK_ABSENCE_THRESHOLD = 75  # Menos de 75% de asistencia = en riesgo
 
 # Configuración de reportes
-REPORT_TITLE = "Academic Performance Analysis Report"
-REPORT_AUTHOR = "Programming III Team"
+REPORT_TITLE = "Reporte de Análisis de Rendimiento Académico"
+REPORT_AUTHOR = "Equipo de Programming III"
 INSTITUTION = "Universidad Tecnológica de Panamá"
 ```
 
@@ -164,6 +164,13 @@ El sistema genera automáticamente los siguientes tipos de gráficos:
 - **Comparaciones demográficas** - Boxplots y gráficos de violin
 - **Tendencias temporales** - Gráficos de líneas y series temporales
 - **Análisis de riesgos** - Gráficos de dispersión y clasificación
+- **Análisis de regresión curvilínea** - 5 modelos comparativos (lineal, cuadrática, cúbica, logarítmica, exponencial)
+
+### 🎯 Características Avanzadas de Visualización:
+- **Selección automática del mejor modelo** basada en coeficiente R²
+- **Visualización comparativa** de múltiples modelos de regresión
+- **Integración completa en reportes PDF** con espacio para análisis
+- **Gráficas profesionales** con títulos y descripciones en español
 
 ## 📋 Reportes
 
@@ -177,24 +184,25 @@ Los reportes generados incluyen:
 
 ## 🔍 Formato de Datos
 
-El sistema espera datos en formato CSV con las siguientes columnas:
+El sistema está configurado para trabajar con el archivo CSV de análisis académico de la UTP:
 
 ```csv
-gender,NationalITy,StageID,GradeID,SectionID,Topic,Semester,Relation,raisedhands,VisITedResources,AnnouncementsView,Discussion,ParentAnsweringSurvey,ParentschoolSatisfaction,StudentAbsenceDays,Class
+ID_Estudiante;Carrera;Semestre;Materia;Grupo;Docente;Calificacion_Final;Porcentaje_Asistencia;Cumplimiento_Actividades
 ```
 
 ### Descripción de columnas:
-- **gender**: Género del estudiante (M/F)
-- **NationalITy**: Nacionalidad
-- **StageID**: Nivel académico
-- **GradeID**: Grado
-- **Topic**: Materia
-- **raisedhands**: Número de veces que levantó la mano
-- **VisITedResources**: Recursos visitados
-- **AnnouncementsView**: Anuncios visualizados
-- **Discussion**: Participación en discusiones
-- **StudentAbsenceDays**: Días de ausencia
-- **Class**: Nivel de rendimiento (L/M/H)
+- **ID_Estudiante**: Identificador único del estudiante
+- **Carrera**: Carrera universitaria del estudiante
+- **Semestre**: Semestre académico actual
+- **Materia**: Nombre de la materia
+- **Grupo**: Grupo de clase
+- **Docente**: Nombre del docente
+- **Calificacion_Final**: Calificación final del estudiante
+- **Porcentaje_Asistencia**: Porcentaje de asistencia a clases
+- **Cumplimiento_Actividades**: Porcentaje de cumplimiento de actividades
+
+### 🔧 Compatibilidad:
+El sistema incluye mapeo automático de columnas para compatibilidad con diferentes formatos de datos y soporte para separadores CSV personalizados.
 
 ## 🤝 Contribución
 
@@ -221,6 +229,32 @@ Para soporte técnico o preguntas:
 - Email: soporte@utp.ac.pa
 - Documentación: [ARCHITECTURE.md](ARCHITECTURE.md)
 - Issues: [GitHub Issues](https://github.com/usuario/programming-iii/issues)
+
+## 🚀 Mejoras Recientes (v2.0)
+
+### 🎯 Análisis de Regresión Curvilínea
+- **5 modelos de regresión** comparativos (lineal, cuadrática, cúbica, logarítmica, exponencial)
+- **Selección automática** del mejor modelo basado en R²
+- **Visualización avanzada** con comparación de modelos
+- **Integración completa** en reportes PDF
+
+### 🔧 Adaptación a Nuevo Dataset
+- **Soporte para separador CSV ';'** (nuevo archivo UTP)
+- **Mapeo automático de columnas** para compatibilidad
+- **Configuración actualizada** para datos académicos panameños
+- **Limpieza de datos mejorada** con nuevas variables
+
+### 📊 Reportes Mejorados
+- **5 gráficas integradas** en cada reporte PDF
+- **Espacio dedicado** para análisis de visualizaciones
+- **Formato profesional** con títulos en español
+- **Generación automática** de reportes con gráficas
+
+### 🧹 Limpieza de Código
+- **Eliminación de código redundante** (677 líneas menos)
+- **Archivos duplicados removidos** (781KB de archivos temporales)
+- **Código más mantenible** y eficiente
+- **Funcionalidad preservada** al 100%
 
 ## 🚨 Problemas Conocidos
 
